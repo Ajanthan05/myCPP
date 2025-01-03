@@ -1,5 +1,8 @@
+#include <iostream>
 #include <string>
 #include <utility> // for std::move and std::exchange
+#include <chrono>
+#include <vector>
 
 class Widget {
 private:
@@ -59,11 +62,21 @@ int main() {
     std::string s("Long string that needs to be copied");
     std::vector<Widget> v{};
 
-    contexpr size_t N(10000);
+    constexpr size_t N(10000);
 
     std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
     start = std::chrono::high_resolution_clock::now();
     
+    for (size_t i=0UL; i<N; i++) {
+        Widget w{1, s, nullptr};
+        v.push_back(std::move(w));
+    }
+
+    end = std::chrono::high_resolution_clock::now();
+    const std::chrono::duration<double> elapsedTime(end - start);
+    const double seconds(elapsedTime.count());
+
+    std::cout << "Runtime: " << seconds <<"s\n\n";
 
     return 0;
 }
