@@ -194,6 +194,19 @@ Node* insertBeforeValue(Node* head, int el, int val) {
     return head;
 }
 
+Node* reverseLL(Node *head) {
+    Node *newHead = NULL;
+    while(head != NULL) {
+        Node *next = head->next;
+        head->next = newHead;
+        newHead = head;
+        head = next;
+    }
+    return newHead;
+}
+
+
+
 int main() {
 
     std::vector<int> arr = {1,2,3,4};
