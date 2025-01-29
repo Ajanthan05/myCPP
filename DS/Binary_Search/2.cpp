@@ -62,6 +62,7 @@ public:
     }
 };
 
+/* unique elements */
 int searchInRotatedSortedArray(std::vector<int>& arr, int target) {
     int n = arr.size();
     int low = 0;
@@ -98,6 +99,80 @@ int searchInRotatedSortedArray(std::vector<int>& arr, int target) {
     return -1;
 }
 
+
+/* Repeating elements */
+int searchInRotatedSortedArray_with_repeating(std::vector<int>& arr, int target) {
+    int n = arr.size();
+    int low = 0;
+    int high = n-1;
+    int mid;
+
+    while(low <= high) {
+        mid = low + (high - low) / 2;
+
+        if (arr[low] == arr[mid] && arr[mid] == arr[high]) {
+            low++; high--;
+            continue;
+        }
+
+        if (arr[mid] == target) return mid;
+
+        // here always left or write will be sorted
+
+        // left sorted
+        if (arr[low] <= arr[mid]) {
+            if (arr[low] <= target && target <= arr[mid]) {
+                high = mid-1;
+            }
+            else {
+                low = mid + 1;
+            }
+        }
+        // right sorted
+        else {
+            if (arr[mid] <= target && target <= arr[high]) {
+                low = mid + 1;
+            }
+            else {
+                high = mid - 1;
+            }
+        }
+    }
+
+    // If not found 
+    return -1;
+}
+
+/* BS-6. Minimum in Rotated Sorted Array */
+int Min(std::vector<int>& arr) {
+    int low = 0;
+    int n = arr.size();
+    int high = n - 1;
+    int ans = INT_MAX;
+    int mid;
+
+    while(low <= high) {
+        mid = low + (high - low) / 2;
+
+        /* OPTIMIZE
+            search space is already sorted then always arr[low] will be smaller
+        */
+        if (arr[low] <= arr[high]) {
+            ams = std::min(ans, arr[low]);
+            break;
+        }
+        
+        if (arr[low] <= arr[mid]) {  // Left half is sorted
+            ans = std::min(ans, arr[low]);
+            low = mid + 1;
+        }
+        else {      // Rght half is sorted
+            ans = std::min(ans, arr[mid]);
+            high = mid - 1;
+        }
+    }
+    return ans;
+}
 
 int main() {
 
