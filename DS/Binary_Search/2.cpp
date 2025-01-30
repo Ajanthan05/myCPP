@@ -154,14 +154,14 @@ int Min(std::vector<int>& arr) {
     while(low <= high) {
         mid = low + (high - low) / 2;
 
-        /* OPTIMIZE
+        /* More OPTIMIZE
             search space is already sorted then always arr[low] will be smaller
         */
         if (arr[low] <= arr[high]) {
             ams = std::min(ans, arr[low]);
             break;
         }
-        
+
         if (arr[low] <= arr[mid]) {  // Left half is sorted
             ans = std::min(ans, arr[low]);
             low = mid + 1;
@@ -173,6 +173,51 @@ int Min(std::vector<int>& arr) {
     }
     return ans;
 }
+
+/* unique */
+int rotatedTimes(std::vector<int>& arr) {
+    int low = 0;
+    int n = arr.size();
+    int high = n - 1;
+    int ans = INT_MAX;
+    int mid;
+    int 
+
+    while(low <= high) {
+        mid = low + (high - low) / 2;
+
+        /* More OPTIMIZE
+            search space is already sorted then always arr[low] will be smaller
+        */
+        if (arr[low] <= arr[high]) {
+            // ams = std::min(ans, arr[low]);
+            if (arr[low] < ans) {
+                index = low;
+                ans = arr[low];
+            }
+            break;
+        }
+
+        if (arr[low] <= arr[mid]) {  // Left half is sorted
+            // ans = std::min(ans, arr[low]);
+            if (arr[low] < ans) {
+                index = low;
+                ans = arr[low];
+            }
+            low = mid + 1;
+        }
+        else {      // Rght half is sorted
+            // ans = std::min(ans, arr[mid]);
+            if (arr[low] < ans) {
+                index = mid;
+                ans = arr[mid];
+            }
+            high = mid - 1;
+        }
+    }
+    return index;
+}
+
 
 int main() {
 
