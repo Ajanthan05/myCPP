@@ -1,4 +1,6 @@
 #include <iostream>
+// #include <string>
+#include <cstring>
 using namespace std;
 
 class String
@@ -8,7 +10,7 @@ private:
     unsigned int len;
 
 public:
-    String() : res(nullptr), len=0 
+    String() : res(nullptr), len(0) 
     {
 
     }
@@ -22,7 +24,7 @@ public:
     }
 
 // Coppy constructor
-    String(const Strinng& str) // CONSTANT for not to change str accedently, with out & , then u need to have copy constructor
+    String(const String& str) // CONSTANT for not to change str accedently, with out & , then u need to have copy constructor
     {
         len = str.len;  // same class we can access private member
         res = new char[len + 1];
@@ -30,13 +32,13 @@ public:
     }
 
 // Move Constructor
-    String(const String&& str)  // && is rValue reference => ur passing something as temporrary object
-    {
-        len = str.len;
-        res = str.res;
-        str = nullptr;
-        str.len = 0;
-    }
+    // String(const String&& str)  // && is rValue reference => ur passing something as temporrary object
+    // {
+    //     len = str.len;
+    //     res = str.res;
+    //     str = nullptr;
+    //     str.len = 0;
+    // }
 
 // Coppy assignment operator
 /* Here object is already defined and we are copying from other string 
@@ -70,17 +72,17 @@ str3 = "hello";  it call coppy assignment operator
     /* 
     What is CAS (Copy And Swap)
     str3=str1;  now String dosen't have reference, in str, str1 copy will present (it call copy constructor)*/
-    String& operator=(String str)
-    {
-        swap(this, str);  
-        return *this;    // str is temperary it will det deleted
-    }
+    // String& operator=(String str)
+    // {
+    //     swap(this, str);  
+    //     return *this;    // str is temperary it will det deleted
+    // }
 
-    swap(String& str1, String& str2)
-    {
-        std::swap(str1.res, str2.res);
-        std::swap(str1.len, str2.len);
-    }
+    // swap(String& str1, String& str2)
+    // {
+    //     std::swap(str1.res, str2.res);
+    //     std::swap(str1.len, str2.len);
+    // }
 
     unsigned int length()
     {
@@ -88,9 +90,13 @@ str3 = "hello";  it call coppy assignment operator
     }
 
     /* Friend function => can access the private member of class outside */
-    friend ostream& operator<<(ostream& out, String& str);
+    // friend ostream& operator<<(ostream& out, String& str); 
+    /* Error ember "String::res" (declared at line 9) is inaccessible
+    Make sure that both the friend declaration and the definition match in terms of const.
+    */
+    friend std::ostream& operator<<(std::ostream& out, const String& str);
 
-    friend istream& operator>>(istream& out, String& str);
+    friend istream& operator>>(istream& out, const String& str);
 
     ~String()
     {
@@ -108,7 +114,7 @@ str3 = "hello";  it call coppy assignment operator
 /* here << as operator function and cout and str1 as parameters*/
 ostream& operator<<(ostream& out, const String& str)
 {
-    out<<str.res;  // here we cannot access private member outside the ckass if not frind function
+    out<<str.res;  // here we cannot access private member outside the class if not frind function
     return out;   // So that we can do chain like cout<<srt3<<srt2<<srt1;
 }
 
