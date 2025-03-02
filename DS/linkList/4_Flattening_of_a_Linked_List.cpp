@@ -19,7 +19,7 @@ public:
         Node *res = temp;
 
         while(a != NULL && b != NULL) {
-            if (a.val < b->val) {
+            if (a->val < b->val) {
                 temp->child = a;
                 temp = temp->child;
                 a = a->child;
