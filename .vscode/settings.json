@@ -58,6 +58,7 @@
         "cstring": "cpp",
         "fstream": "cpp",
         "set": "cpp",
-        "queue": "cpp"
+        "queue": "cpp",
+        "stack": "cpp"
     }
 }

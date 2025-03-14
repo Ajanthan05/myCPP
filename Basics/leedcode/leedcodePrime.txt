@@ -1,3 +1,7 @@
 https://leetcode.com/problems/maximum-size-subarray-sum-equals-k/description/
 
 https://leetcode.com/problems/number-of-distinct-islands/description/
+
+https://leetcode.com/problems/minimize-max-distance-to-gas-station/description/
+
+https://leetcode.com/problems/inorder-successor-in-bst/description/

@@ -7,7 +7,7 @@
 
 using namespace std;
 
-/*
+/* Diameter of Binary Tree
     Longest path between 2 nodes
     Path does not need to pass via root
 */
@@ -34,6 +34,7 @@ int findMax(Node *node, int &maxi) {
 int Diameter(Node *node) {
     int maxi = 0;
     findMax(node, maxi);
+    return maxi;
 }
 
 /* Maximum Path Sum in Binary Tree */
