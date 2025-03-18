@@ -34,7 +34,7 @@ public:
         int res = rand() % valid_num;
 
         if(m.count(res)) {
-            return m[res]
+            return m[res];
 
         }
         return res;

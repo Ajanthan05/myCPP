@@ -5,3 +5,5 @@ https://leetcode.com/problems/number-of-distinct-islands/description/
 https://leetcode.com/problems/minimize-max-distance-to-gas-station/description/
 
 https://leetcode.com/problems/inorder-successor-in-bst/description/
+
+https://leetcode.com/problems/alien-dictionary/description/

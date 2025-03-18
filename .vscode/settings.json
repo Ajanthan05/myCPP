@@ -59,6 +59,7 @@
         "fstream": "cpp",
         "set": "cpp",
         "queue": "cpp",
-        "stack": "cpp"
+        "stack": "cpp",
+        "unordered_set": "cpp"
     }
 }
