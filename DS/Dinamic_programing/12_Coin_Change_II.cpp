@@ -53,6 +53,51 @@ int change_dp(int amount, vector<int>& coins) {
     return fun_dp(n-1, amount, coins, dp);
 }
 
+/* TABULATION
+
+*/
+int change_TABULATION(int amount, vector<int>& coins) {
+    int n = coins.size();
+    vector<vector<unsigned long long>> dp(n, vector<unsigned long long>(amount + 1, 0));
+
+    for(int t=0; t<=amount; t++) {
+        dp[0][t] = (t % coins[0] == 0);
+    }
+
+    for(int ind=1; ind<n; ind++) {
+        for(int t=0; t<=amount; t++) {
+            unsigned long long notTake = dp[ind-1][t];
+            unsigned long long take = 0;
+            if (t >= coins[ind]) take = dp[ind][t-coins[ind]];
+
+            dp[ind][t] = notTake + take;
+        }
+    }
+    return dp[n-1][amount];
+}
+
+int change_TABULATION(int amount, vector<int>& coins) {
+    int n = coins.size();
+    // vector<vector<unsigned long long>> dp(n, vector<unsigned long long>(amount + 1, 0));
+
+    vector<unsigned long long> prev(amount + 1, 0), cur(amount+1, 0);
+    for(int t=0; t<=amount; t++) {
+        prev[t] = (t % coins[0] == 0);
+    }
+
+    for(int ind=1; ind<n; ind++) {
+        for(int t=0; t<=amount; t++) {
+            unsigned long long notTake = prev[t];
+            unsigned long long take = 0;
+            if (t >= coins[ind]) take = cur[t-coins[ind]];
+
+            cur[t] = notTake + take;
+        }
+        prev = cur;
+    }
+    return prev[amount];
+}
+
 int main() {
 
     vector<int> coins = {2};  

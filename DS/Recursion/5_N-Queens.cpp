@@ -1,11 +1,9 @@
 #include <iostream>
-#include <vestor>
+#include <vector>
 #include <string>
+using namespace std;
 
 class N_Queens {
-
-
-
 public:
     bool isSafe(int row, int col, std::vector<std::string> board, int n) {
         int duprow = row;
@@ -17,14 +15,14 @@ public:
             col--;
         }
 
-        col = dupclo;
+        col = dupcol;
         row = duprow;
         while(col>=0) {
             if(board[row][col] == 'Q') return false;
             col--;
         }
 
-        col = dupclo;
+        col = dupcol;
         row = duprow;
         while(row<n && col>=0) {
             if(board[row][col] == 'Q') return false;
@@ -34,14 +32,14 @@ public:
         return true;
     }
 
-    void solv(int col, vector<string> &board,vector<vector<string>> ans, int n) {
+    void solve(int col, vector<string> &board,vector<vector<string>> &ans, int n) {
         if(col == n) {
             ans.push_back(board);
             return;
         }
 
         for (int row=0; row<n; row++) {
-            if(isSafe(row, cl, board, n)) {
+            if(isSafe(row, col, board, n)) {
                 board[row][col] = 'Q';
                 solve(col+1, board, ans, n);
                 board[row][col] = '.';
@@ -61,7 +59,7 @@ public:
         return ans;
     }
 
-}
+};
 
 
 int main() {

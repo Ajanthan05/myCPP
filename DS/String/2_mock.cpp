@@ -33,6 +33,17 @@ int permutation(string s1, string s2) {
     return count;
 }
 
+/* Find the length of the longest substring without repeated characters given a string s */
+int lonestSS(string s) {
+    queue<char> hash;
+    int r=0, l=0;
+    int count = 0;
+    while(l <= r && r < s.size()) {
+        if (hash.find(s[r]))
+        hash.insert(s[r])
+    }
+}
+
 int main() {
     string s1 = "cbabcacabca";
     string s2 = "abc";

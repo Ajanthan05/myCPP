@@ -206,6 +206,134 @@ Node* reverseLL(Node *head) {
 }
 
 
+Node* removeElements(Node* head, int val) {
+    while (head && head->data == val) {  // Handle head deletions
+        Node* temp = head;
+        head = head->next;
+        delete temp;
+    }
+
+    Node* curr = head;
+    Node* prev = nullptr;
+
+    while (curr) {
+        if (curr->data == val) {
+            prev->next = curr->next;
+            delete curr;
+            curr = prev->next;
+        } else {
+            prev = curr;
+            curr = curr->next;
+        }
+    }
+    return head;
+}
+
+/* Remove duplicates from sorted */
+Node* deleteDuplicates(Node* head) {
+    Node* current = head;
+    Node* headptr = head;
+    while (current && current->next) {
+        if(current->data == current->next->data){
+            current->next = current->next->next;
+        }
+        else{
+            current = current->next;
+        }
+    }
+    return headptr;
+}
+
+
+// Node* reverseKGroup(Node* head, int k) {
+    
+//     Node* KthNode = head;
+//     bool first = true;
+//     Node* newHead = head;
+
+//     int cnt = 0;
+//     while(cnt == k) {
+        
+//         while(KthNode && (cnt < k)) {
+//             cnt++;
+//             KthNode = KthNode->next;
+//         }
+//         Node* newNext = KthNode->next;
+//         KthNode->next = nullptr;
+//         Node* headAfter = reverseLL(head);
+//         if (first) newHead = headAfter;
+//         first = false;
+//         head->next = newNext;
+//         head = newNext;
+//     }
+//     return newHead;
+// }
+Node* reverseKGroup(Node* head, int k) {
+    if (!head || k <= 1) return head;  // Edge case handling
+
+    Node* KthNode = head;
+    Node* newHead = nullptr;
+    Node* prevTail = nullptr;
+
+    while (KthNode) {
+        int cnt = 0;
+        Node* groupHead = KthNode;
+        Node* groupTail = KthNode;
+
+        // Move `KthNode` k nodes ahead
+        while (cnt < k && KthNode) {
+            groupTail = KthNode;
+            KthNode = KthNode->next;
+            cnt++;
+        }
+
+        // If the group size is less than k, do not reverse
+        if (cnt < k) {
+            if (prevTail) prevTail->next = groupHead;  // Connect last reversed part
+            break;
+        }
+
+        // Break the current segment
+        groupTail->next = nullptr;
+
+        // Reverse the current k-group
+        Node* reversedHead = reverseLL(groupHead);
+
+        // Update the new head for the first group
+        if (!newHead) newHead = reversedHead;
+
+        // Connect previous part to reversed group
+        if (prevTail) prevTail->next = reversedHead;
+
+        // Move `prevTail` to the last node of reversed segment
+        prevTail = groupHead;  // `groupHead` is now the last node after reversing
+
+        // Move `groupHead` to `KthNode` (next segment start)
+        groupHead->next = KthNode;
+    }
+
+    return newHead ? newHead : head;
+}
+
+Node* rotateRight(Node* head, int k) {
+    if (!head || k < 1) return head;
+    Node* tmp = head;
+
+    while(tmp || k > 0) {
+        tmp = tmp->next;
+        k--;
+    }
+    if (k) return head;
+    Node* kth = head;
+    while(tmp) {
+        tmp = tmp->next;
+        kth = kth->next;
+    }
+    Node* newHead = kth->next;
+    kth->next = nullptr;
+    tmp->next = head;
+    return newHead;
+}
 
 int main() {
 

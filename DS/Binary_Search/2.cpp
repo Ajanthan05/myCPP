@@ -158,7 +158,7 @@ int Min(std::vector<int>& arr) {
             search space is already sorted then always arr[low] will be smaller
         */
         if (arr[low] <= arr[high]) {
-            ams = std::min(ans, arr[low]);
+            ans = std::min(ans, arr[low]);
             break;
         }
 

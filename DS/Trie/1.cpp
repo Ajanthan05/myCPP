@@ -1,14 +1,20 @@
 #include <iostream>
 #include <vector>
 #include <climits>
+#include <string>
+
+using namespace std;
 
 struct Node 
 {
     Node *links[26];
     bool flag = false;
-    bool containsKey(char ch) return (links[ch - 'a'] != NULL);
 
-    void put(char ch, Node * node) {
+    bool containsKey(char ch) {
+        return (links[ch - 'a'] != NULL);
+    }
+    
+    void put(char ch, Node* node) {
         links[ch - 'a'] = node;
     }
 
@@ -23,7 +29,7 @@ struct Node
     bool isEnd() {
         return flag;
     }
-}
+};
 
 class Trie
 {
@@ -58,11 +64,11 @@ public:
 
     bool startWith(string prefix) {
         Node *node = root;
-        for (int i=0; ii<str.length(); i++) {
-            if (!node->containsKey(str[i])) {
+        for (int i=0; i<prefix.length(); i++) {
+            if (!node->containsKey(prefix[i])) {
                 return false;
             }
-            node = node->get(str[i]);
+            node = node->get(prefix[i]);
         }
         return true;
     }
