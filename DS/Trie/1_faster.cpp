@@ -20,11 +20,11 @@ struct TrieNode{
     }
 
     bool contains(char c){
-        return children[c-'a']!=nullptr;
+        return children[c-'a'] != nullptr;
     }
 
     void put(char c, TrieNode* node){
-        children[c-'a']=node;
+        children[c-'a'] = node;
     }
 
     TrieNode* get(char c){
@@ -45,14 +45,14 @@ class Trie {
     TrieNode* root;
 public:
     Trie() {
-        root=new TrieNode();
+        root = new TrieNode();
     }
     
     void insert(string word) {
         TrieNode* node=root;
         for(char c: word){
             if(!node->contains(c))
-                node->put(c,new TrieNode());
+                node->put(c, new TrieNode());
             node=node->get(c);
         }
         node->setEnd();

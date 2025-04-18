@@ -1,6 +1,12 @@
 #include <iostream>
 #include <vector>
-#include <string>
+#include <climits>
+#include <queue>
+#include <utility>
+#include <algorithm>
+#include <stack>
+
+using namespace std;
 
 struct Node {
     Node *links[26];
@@ -21,7 +27,11 @@ struct Node {
     void setEnd() {
         flag = true;
     }
-}
+
+    bool isEnd() {
+        return flag;
+    }
+};
 
 class Trie {
 private: Node *root;
@@ -47,7 +57,7 @@ public:
         Node *node = root;
         for (int i=0; i<str.size(); i++) {
             if (node->containsKey(str[i])) {
-                node = node->get(str[i]);
+                node = node->get(str[i]);  // first go to the reference try
 
                 if (node->isEnd() == false) return false;
             }
@@ -62,18 +72,20 @@ string completeString(int n, std::vector<string> &a) {
     for (auto &it : a) {
         trie.insert(it);
     }
-
+    
     string longest = "";
     for (auto &it : a) {
-        if (checkIfPrefixExists(it)) {
+        if (trie.checkPrefixExists(it)) {
             if (it.length() > longest.length()) {
                 longest = it;
             }
-            else if(it.length() longest.length() && it < longest) {// lexicographically
+            else if(it.length() == longest.length() && it < longest) {// lexicographically
                  longest = it;
             }
         }
     }
+
+    return (longest == "") ? "None" : longest;
 }
 
 int main() {

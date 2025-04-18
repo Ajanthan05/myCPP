@@ -35,6 +35,7 @@ void merge(std::vector<int> &arr, int low, int mid, int high, int &cnt) {
         right++;
     }
 
+    // Transfer all elements fron temp to arr
     for (int i=low; i<=high; i++) {
         arr[i] = tmp[i - low];
     }

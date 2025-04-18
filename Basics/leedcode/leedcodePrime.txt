@@ -12,3 +12,7 @@ https://leetcode.com/problems/alien-dictionary/description/
 
 solve
 DP https://leetcode.com/problems/evaluate-boolean-expression/description/
+
+
+trie
+https://leetcode.com/problems/longest-word-with-all-prefixes/description/

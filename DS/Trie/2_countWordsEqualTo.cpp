@@ -1,6 +1,8 @@
 #include <iostream>
-#include <vector>
+#include <string>
 #include <climits>
+
+using namespace std;
 
 struct Node 
 {
@@ -43,7 +45,7 @@ struct Node
     int getPrefix() {
         return cntPrefix;
     }
-}
+};
 
 class Trie
 {
