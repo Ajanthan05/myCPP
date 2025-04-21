@@ -104,7 +104,7 @@ public:
 
 
 Node* middleNode(Node *head) {
-    Node* fast = head, slow = head;
+    Node* fast = head, *slow = head;
     while (fast != NULL && fast->next != NULL) {
         slow = slow->next;
         fast = fast->next->next;
@@ -124,7 +124,7 @@ Node *mergeTwoLists(Node *l1, Node *l2) {
             tmp = l1;
             l1 = l1->next;
         }
-        temp->next = l2;
+        tmp->next = l2;
         std::swap(l1, l2)
     }
     return res;
@@ -271,7 +271,7 @@ Node *entryPointOfCycle(Node * head) {
 
         if (fast == slow) {
             while (slow != entry) {
-                slow = sloe->next;
+                slow = slow->next;
                 entry = entry->next;
             }
             return entry;
@@ -297,6 +297,41 @@ Node *rotateK(Node *head, int k) {
     cur->next = NULL;
 
     return head;
+}
+
+Node* copyRandomList(Node* head) {
+    Node *iter = head; 
+    Node *front = head;
+
+    while(iter != NULL) {
+        Node* front = iter->next;
+        iter->next = new Node(iter->val, front);
+        iter = front; //iter->next->next;
+    }
+
+    // Second round: assign random pointers for the copy nodes.
+    iter = head;
+    while(iter != NULL) {
+        if (iter->random != NULL) {
+            iter->next->random = iter->random->next;
+        }
+        iter = iter->next->next;
+    }
+
+    // 3rd Round
+    iter = head;
+    Node *dummy = new Node(0);
+    Node *copy = dummy;
+
+    while(iter != NULL) {
+        front = iter->next->next;
+        copy->next = iter->next;
+        iter->next = front;
+
+        copy = copy->front;
+        iter = front;
+    }
+    return dummy->next;
 }
 
 int main() {

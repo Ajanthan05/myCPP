@@ -27,6 +27,10 @@ using namespace std;
 //     return count;
 // }
 
+/*
+TC = O(2*2N)
+SC = O(1)
+*/
 int atMost(vector<int>& nums, int s) {
     if (s < 0) return 0;  // No subarray can have a negative sum.
     int count = 0;

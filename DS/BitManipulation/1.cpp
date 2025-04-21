@@ -18,7 +18,7 @@ bool isEven(int n) {
 }
 
 /*
-n > 0: This ensures that v
+n > 0: This ensures that 
 n is positive. Negative numbers and zero are not considered powers of two.
 !(n & (n - 1)): For positive numbers that are powers of two, only one bit is set, so 
 n&(n−1) evaluates to 0.
@@ -28,6 +28,16 @@ bool isPowerOfTwo(int n) {
     return n > 0 && (!(n & (n - 1)));
     //return n && (!(n & (n - 1))); //return (n==0) ? 0 : (!(n&(n-1)));
 }
+
+/* Coint number of set bits */
+
+
+/* Swap 2 nibbles(4 bit) in a byte*/
+int swapNibbles(unsigned char x) {
+    return ( (0x0F & x) << 4 | (0xF0 & x) >> 4);
+}
+
+/* Sort an array of 0's 1's & 2's */
 
 int main() {
     unsigned int num;

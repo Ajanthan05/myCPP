@@ -53,6 +53,8 @@ long long f(int i, int j, int isTrue, string &exp, vector<vector<vector<long lon
         }
         else return exp[i] == 'F';
     }
+    if (dp[i][j][isTrue] != -1) return true;
+
     long long ways = 0;
     for(int ind=i+1; ind<=j-1; ind+=2) {
         long long lT = f(i, ind-1, 1, exp, dp);
@@ -73,7 +75,7 @@ long long f(int i, int j, int isTrue, string &exp, vector<vector<vector<long lon
             else ways = (ways + (lT*rT)%mod + (lF*rF)%mod)%mod;
         }
     }
-    return ways;
+    return dp[i][j][isTrue] = ways;
 }
 
 bool parseBoolExpr(string expression) {

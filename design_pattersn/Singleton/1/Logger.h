@@ -11,6 +11,8 @@ private:
     static mutex mtx;
     static Logger *loggerInstance;
     Logger();
+    Logger(const Logger &); // Copy constructor as private
+    Logger operator=(const Logger &); // operater overaloading as private
 
 public:
     static Logger* getLogger();

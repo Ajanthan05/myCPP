@@ -105,6 +105,78 @@ vector<pair<int, int>> findPairs(Node* head, int k)
     return ans;
 }
 
+// vector<pair<int, int>> findPairs(Node* head, int k)
+// {
+//     Node *right = head, *left = head;
+//     vector<pair<int, int>> ans;
+//     while(right) {
+//         right = right->next;
+//     }
+
+//     while(right > left) {
+//         if (left->data + right->data == k) {
+//             ans.push_back({left->data, right->data});
+//             left = left->next;
+//         }
+//         else if (left->data + right->data > k) {
+//             right = right->prev;
+//         }
+//         else {
+//             left = left->next;
+//         }
+//     }
+//     return ans;
+// }
+vector<pair<int, int>> findPairs(Node* head, int k) {
+    vector<pair<int, int>> ans;
+    if (!head) return ans;  // Handle empty list
+
+    Node *left = head, *right = head;
+
+    // Move right to the last node
+    while (right->next) {
+        right = right->next;
+    }
+
+    // Two-pointer approach
+    while (left && right && left != right && left->prev != right) {
+        int sum = left->data + right->data;
+
+        if (sum == k) {
+            ans.push_back({left->data, right->data});
+            left = left->next;
+            right = right->prev;
+        } 
+        else if (sum > k) {
+            right = right->prev;
+        } 
+        else {
+            left = left->next;
+        }
+    }
+    return ans;
+}
+
+/* Remove duplicates from sorted DLL */
+Node* deleteDuplicates(Node* head) {
+    if (!head) return nullptr;  // Handle empty list case
+    Node* tmp = head;
+
+    while(tmp) {
+        Node* newNode = tmp->next;
+        while(newNode && newNode->data == tmp->data) {
+            Node* duplicate = newNode;
+            newNode = newNode->next;
+            delete duplicate;
+        }
+        tmp->next = newNode;
+        if (newNode) newNode->prev = tmp;
+
+        tmp = newNode;
+        // newNode = newNode->next;
+    }
+    return head;
+}
 
 int main() {
 

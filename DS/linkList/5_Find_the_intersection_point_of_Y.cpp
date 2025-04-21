@@ -75,6 +75,7 @@ Node *getIntersectionNode(Node *l1, Node *l2) {
     Node *b = l2;
 
     while (a != b) {
+        if (a == NULL && b == NULL) return NULL;
         a = (a == NULL? l2 : a->next);
         b = (b == NULL? l1 : b->next);
     }

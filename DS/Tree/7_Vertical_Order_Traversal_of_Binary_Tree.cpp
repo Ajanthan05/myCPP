@@ -80,6 +80,59 @@ bool isSymmetric(Node* root) {
     return Symmetric(root->left, root->right);
 }
 
+/* Print Root to Node Path in Binary Tree */
+
+
+
+
+/* L27 Lowest Common Ancestor of a Binary Tree 
+*/
+Node* lowestCommonAncestor(Node* root, Node* p, Node* q) {
+    if (!root || p == root || q == root) return root;
+
+    Node *left = lowestCommonAncestor(root->left, p, q);
+    Node *right = lowestCommonAncestor(root->right, p, q);
+
+    // if (left != NULL) {
+    //     return right;
+    // }
+    // else if(right == NULL) {
+    //     return left;
+    // }
+    // else { // Both left and right are not null we found our result
+    //     return root;
+    // }
+
+    if (left != NULL && right != NULL) {
+        return root; // If both left and right are non-null, root is the LCA
+    } 
+    return left != NULL ? left : right; // Return the non-null child (if any)
+}
+
+
+/* L28 Maximum Width of Binary Tree 
+Width => no of nodes between any 2 nodes (In a level)
+
+So flow level order triversal
+number the nodes in each level
+lastNode - firstNode + 1
+
+when zero base indexing
+left:  2i + 1
+right: 2i + 2
+*/
+int widthOfBinaryTree(Node* root) {
+    if (!root) return 0;
+
+    int ans = 0;
+    queue<pair<Node*, int>> q;
+    q.push({root, 0});
+
+    while(!q.empty()) {
+        
+    }
+}
+
 int main() {
 
 

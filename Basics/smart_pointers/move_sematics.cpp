@@ -134,7 +134,7 @@ Widget_default (Widget_default&& ) = default; // NOTE: also noexcept!  it will m
 // Move constructor
 Widget_default& operator=(Widget_default&& w) = default;
 
-}
+};
 
 
 class Widget_another_approach {

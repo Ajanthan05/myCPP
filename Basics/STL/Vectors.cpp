@@ -60,6 +60,10 @@ This ensures elements are inserted in reverse order.
     cout << "\n\n";
 }
 
+// The capacity of vector will not decrease automatically on removing the elements from vector.
+// Decrease capacity of vector
+// v.shrink_to_fit();  method to decrease the capacity of vector which makes the capacity will equal to size of vector.
+
 int main() {
     insert();
 

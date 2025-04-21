@@ -15,10 +15,13 @@ void Logger::Log(string msg) {
 }
 
 Logger* Logger::getLogger() {
-    mtx.lock();
+    // Double check locking (We need the lock when we are trying to create new instant)
     if (loggerInstance == nullptr) {
-        loggerInstance = new Logger();
+        mtx.lock();
+        if (loggerInstance == nullptr) {
+            loggerInstance = new Logger();
+        }
+        mtx.unlock();
     }
-    mtx.unlock();
     return loggerInstance;
 }

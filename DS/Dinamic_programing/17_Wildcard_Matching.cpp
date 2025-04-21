@@ -87,13 +87,13 @@ bool fun(int i, int j, string s, string p, vector<vector<int>> &dp) {
     if (dp[i][j] != -1) return dp[i][j];
 
     if (s[i] == p[j] || p[j] == '?') {
-        return dp[i][j] = fun(i - 1, j - 1, s, p);
+        return dp[i][j] = fun(i - 1, j - 1, s, p, dp);
     }
     else if (p[j] == '*') {
-        return dp[i][j] = fun(i, j - 1, s, p) || fun(i - 1, j, s, p);
+        return dp[i][j] = fun(i, j - 1, s, p, dp) || fun(i - 1, j, s, p, dp);
     }
 
-    return false;
+    return dp[i][j] = false;
 }
 
 bool isMatch(string s, string p) {
@@ -101,6 +101,41 @@ bool isMatch(string s, string p) {
     vector<vector<int>> dp(n, vector<int>(m, -1));
     return fun(n - 1, m - 1, s, p, dp);  // Fix the function call
 }
+
+/*  TABULATION  */
+bool fun(int i, int j, string s, string p, vector<vector<int>> &dp) {
+
+    if (i==0 && j== 0) return true;
+    if (i==0 && j > 0) return false;
+    if (j == 0 && i > 0) {
+        for(int ii=1; ii<=i; ii++) {
+            if (p[ii-1] != '*') return false;
+        }
+        return true;
+    }
+
+    if (dp[i][j] != -1) return dp[i][j];
+
+    if (s[i-1] == p[j-1] || p[j-1] == '?') {
+        return dp[i][j] = fun(i - 1, j - 1, s, p, dp);
+    }
+    else if (p[j-1] == '*') {
+        return dp[i][j] = fun(i, j - 1, s, p, dp) || fun(i - 1, j, s, p, dp);
+    }
+
+    return dp[i][j] = false;
+}
+
+bool isMatch(string s, string p) {
+    int n = s.size(), m = p.size();
+    vector<vector<int>> dp(n+1, vector<int>(m+1, 0));
+
+    for (int j=0; j<=m; j++) {
+        dp[0][j]
+    }
+
+    return fun(n, m, s, p, dp);  // Fix the function call
+}   
 
 
 int main() {

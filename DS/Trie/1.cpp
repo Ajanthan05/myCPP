@@ -22,7 +22,7 @@ struct Node
         return links[ch - 'a'];
     }
 
-    bool setEnd() {
+    void setEnd() {
         flag = true;
     }
 
@@ -35,10 +35,11 @@ class Trie
 {
 private: Node *root;
 
+public: 
     Trie() {
         root = new Node();
     }
-public: 
+
     void insert(string str) {
         Node *node = root;
         for (int i=0; i<str.length(); i++) {
@@ -75,7 +76,35 @@ public:
 };
 
 int main() {
+    Trie trie;
 
+    // Insert words into the Trie
+    trie.insert("apple");
+    trie.insert("app");
+    trie.insert("bat");
+    trie.insert("batman");
+
+    // Search for words
+    cout << "Search 'apple': " << (trie.search("apple") ? "Found" : "Not Found") << endl;
+    cout << "Search 'app': " << (trie.search("app") ? "Found" : "Not Found") << endl;
+    cout << "Search 'bat': " << (trie.search("bat") ? "Found" : "Not Found") << endl;
+    cout << "Search 'batman': " << (trie.search("batman") ? "Found" : "Not Found") << endl;
+    cout << "Search 'batmobile': " << (trie.search("batmobile") ? "Found" : "Not Found") << endl;
+
+    // Check prefixes
+    cout << "Starts with 'ap': " << (trie.startWith("ap") ? "Yes" : "No") << endl;
+    cout << "Starts with 'batm': " << (trie.startWith("batm") ? "Yes" : "No") << endl;
+    cout << "Starts with 'cat': " << (trie.startWith("cat") ? "Yes" : "No") << endl;
 
     return 0;
 }
+/*
+Search 'apple': Found
+Search 'app': Found
+Search 'bat': Found
+Search 'batman': Found
+Search 'batmobile': Not Found
+Starts with 'ap': Yes
+Starts with 'batm': Yes
+Starts with 'cat': No
+*/

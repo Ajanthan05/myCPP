@@ -37,7 +37,25 @@ int Diameter(Node *node) {
     return maxi;
 }
 
-/* Maximum Path Sum in Binary Tree */
+/* Maximum Path Sum in Binary Tree 
+Ignore -ve path sum
+*/
+int maxPath(Node *node, int &maxi) {
+    if(!node) return 0;
+
+    int lsum = max(0, maxPath(node->left, maxi));
+    int rsum = max(0, maxPath(node->right, maxi));
+
+    maxi = max(maxi, node->data + lsum, rsum);
+
+    return node->data + max(lsum, rsum);
+}
+
+int maxPathSum(Node* root) {
+    int maxi = INT_MIN; //0; -ve answer is possible
+    maxPath(root, maxi);
+    return maxi;
+}
 int maxPathDown(Node *node, int &maxi) {
     if(!node) return 0;
 

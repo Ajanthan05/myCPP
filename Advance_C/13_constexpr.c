@@ -27,6 +27,8 @@ constexpr struct foo f = {.a = 1, .b = 2};
 
 staric struct foo f = {.a = 1, .b = 2}; // staric memory of executable
 
+#default FOO_A 42
+static_assert(FOO_A == 42)
 int main() {
 
     printf("\n");

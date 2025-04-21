@@ -71,6 +71,7 @@ void f(int ind, int target, vector<vector<int>> &ans, vector<int>& arr, int n, v
 }
 
 vector<vector<int>> combinationSum2(vector<int>& candidates, int target) {
+    sort(candidates.begin(), candidates.end());
     int n = candidates.size();
     vector<vector<int>> ans;
     vector<int> comb;
