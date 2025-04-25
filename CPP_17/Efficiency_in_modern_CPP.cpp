@@ -327,9 +327,92 @@ Fixedsize
 Local object (stack or embedded)
 */
 
-/*
-invalidation" refers to situations where certain operations on a container make previously valid references, iterators, or pointers invalid — meaning they now point to unpredictable or wrong memory, and using them leads to undefined behavior.
+/*  STL Containers & Invalidation Rules
+invalidation" refers to situations where certain operations on a container make previously valid references, iterators, or pointers invalid — 
+meaning they now point to unpredictable or wrong memory, and using them leads to undefined behavior.
+
+std::vector
+    push_back, emplace_back:
+
+    Can invalidate all iterators, references, and pointers if reallocation happens.
+    If there's enough capacity → only the end iterator is invalidated.
+
+    insert, erase:
+
+    Invalidates all iterators at or after the point of insertion/erasure.
+
+    References to moved elements are also invalidated.
+
+2. std::deque
+    push_front, push_back, pop_front, pop_back:
+
+    Iterators may be invalidated, but references and pointers remain valid (except for popped elements).
+
+    insert, erase:
+
+    Iterators and references to affected elements are invalidated.
+
+3. std::list, std::forward_list
+    Safe for iterators and references during most operations.
+
+    Only the erased element’s iterator/reference is invalidated.
+
+    That’s why lists are good when stability of iterators is required.
+
+    4. std::map, std::set, unordered_map, unordered_set
+    Inserting or erasing elements:
+
+    Does NOT invalidate other iterators (except for the erased one).
+
+    References/pointers remain valid.
+
+✅ Best Practices
+Never use iterators/references after modifying the container unless you're sure they’re still valid.
+
+Use reserve() on vectors if you want to avoid reallocations and keep pointers/references safe.
+
+Prefer list or map if you need iterator stability during frequent insert/erase.
 */
+
+void STL_Irerators() {
+    /*  std::vector – ⚠️ Invalidates easily
+    push_back() / insert():
+    🔸 If it causes reallocation → all iterators, pointers, and references become invalid.
+    🔸 If there's space, only end() is invalidated.
+    */
+    std::vector<int> v = {1, 2, 3};
+    int* p = &v[0];
+    v.push_back(4);  // May reallocate → `p` is now invalid!
+
+    /*  std::deque – ⚠️ Safer than vector, but still cautious
+    push_back() / push_front():
+    🔸 Iterators may be invalidated.
+    🔸 References and pointers remain valid unless the specific element is removed.*/
+    std::deque<int> d = {1, 2, 3};
+    int* p = &d[0];
+    d.push_front(0);  // `p` might still be valid!
+
+    /*  std::list – ✅ Super stable
+    push_back() / insert() / erase():
+    🔸 Only iterators to erased elements are invalidated.
+    🔸 All other iterators, pointers, and references remain valid.*/
+    std::list<int> l = {1, 2, 3};
+    auto it = l.begin();
+    l.push_back(4);  // `it` is still valid!
+    l.erase(l.begin()); // `it` now invalid, others are fine
+
+    /*  std::map / std::set – ✅ Very safe
+    insert() / erase():
+    🔸 Only iterators to erased elements are invalidated.
+    🔸 Pointers/references to other elements remain safe.*/
+    std::map<int, int> m = {{1, 100}, {2, 200}};
+    auto it = m.begin();
+    m.insert({3, 300});  // `it` still valid!
+    m.erase(1);          // `it` becomes invalid if pointing to 1
+}
+
+
+
 int main() {
     Splicing_test();
     Node_extraction();
