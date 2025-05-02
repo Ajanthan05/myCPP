@@ -62,8 +62,18 @@ int main() {
 
     /*   Static vs Dynamic Extent
 Static extent: Size known at compile time (e.g. std::span<int, 5>)
+Static extent: The size is known at compile time.
+→ std::span<int, 5>
+The static version tells the compiler, "This span will always be exactly 5 elements long." 
+That can enable:
+Slight performance gains (no runtime size tracking)
+Safer code (compiler checks size for you)
 
-Dynamic extent: Size known at runtime (e.g. std::span<int>)*/
+Dynamic extent: Size known at runtime (e.g. std::span<int>)
+Dynamic extent: The size is determined at runtime.
+→ std::span<int>
+
+*/
 
 
     // Dynamic extent
@@ -89,5 +99,20 @@ std::span<int, 3> s_static(arr); // Size must match exactly!
     Doesn't work with dynamically generated or disjoint memory layouts.
 
     No memory ownership = no lifetime guarantee! Don’t return spans to temporary data.
+*/
+
+/*  EDGE CASES
+int arr[] = {1, 2, 3, 4, 5};
+Passing a C-style array directly
+print(arr); // OK! Size is deduced automatically
+In this case, the compiler knows the size of the array at compile time, so it can automatically create a std::span<int> of the correct size.
+
+❌ Case 2: Passing a pointer to the array
+int* ptr = arr;
+print(ptr); // ❌ Won't compile
+This won't work because int* doesn't carry size information — and std::span<int> needs both a pointer and a size.
+print(std::span<int>(ptr, size));
+
+
 */
 }

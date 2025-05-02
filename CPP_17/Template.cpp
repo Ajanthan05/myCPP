@@ -1,6 +1,6 @@
 #include <iostream>
 #include <vector>
-#include <climits>
+#include <list>
 #include <queue>
 #include <utility>
 #include <algorithm>
@@ -102,9 +102,44 @@ void log(T&& first, Args&&... rest) {
     log(std::forward<Args>(rest)...);
 }
 
-int main() {
+
+int log_test() {
     // Flexible: Supports any number and type of arguments.
     log("Error:", 404, "Not Found", 3.14);
-
-    return 0;
 }
+
+
+/*  Container is itself a template (like std::vector, std::list).
+    typename... allows support for variadic template containers
+    
+    A template template parameter allows you to pass a template class 
+    (like std::vector or std::list) as an argument to another class or function template.
+*/
+
+// variadic templates (...).
+template < template <typename...> class Container, typename T>
+class Wrapper {
+    Container<T> data;
+
+public: 
+    void add(const T& value) {
+        data.push_back(value):
+    }
+
+    void print() const {
+        for (const T& item : data)
+            std::cout << item << " ";
+        std::cout << "\n";
+    }
+};
+
+void TestWrapper() {
+    Wrapper<std::vector, int> v;
+    v.add(10); v.add(20); v.print();  // 10 20
+
+    Wrapper<std::list, int> l;
+    l.add(1); l.add(2); l.print();    // 1 2
+}
+
+template <template<typename, typename> class Map, typename K, typename V>
+class MapWrapper { };

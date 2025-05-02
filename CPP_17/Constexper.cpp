@@ -70,6 +70,32 @@ constexpr int get_value(int index) {
 
 static_assert(get_value(2) == 4);
 
+
+/* cpp 14
+Multiple statements allowed
+constexper member nolinger const 
+l;ambda is not allowed
+
+    C++17
+lambda automatically constexper enable
+
+    C++20
+constexper dynamic allocation
+(dynamic allocation cannot leave constexper)
+constexper distructors
+constexper vector
+constexper string
+constexper std algorithms
+constexper virtual function
+
+CTRE:- Regular  Expression are compiled at compile time 
+and executed at runtime
+
+SILLY The world's fastest Raytracer
+constexper enables ARM Emulator
+
+*/
+
 int main() {
 
     constexpr int val = square(5);

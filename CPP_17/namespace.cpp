@@ -68,6 +68,18 @@ namespace A {
     }
 }
 
+typedef void void_tt;
+// or both are same
+using void_t = void;
+
+;template<class T, size_t>
+struct DataStructure {
+
+};
+
+// typedef DataStructure<int, 10> DataStructureInt10;
+using DataStructureInt10 = DataStructure<int, 10>;
+
 int main() {
     Q::V::C obj;
     obj.m();     // Call member function

@@ -216,6 +216,8 @@ global namespace) have this storage duration, plus those declared with static or
 the thread ends. Each thread has its own instance of the object. On
 */
 
+// g++ -fno-elide-constructors -std=c++20 your_file.cpp
+
 
 // ANTI FATENS
 
