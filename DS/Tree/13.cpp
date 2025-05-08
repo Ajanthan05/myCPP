@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
-#include <climits>
-#include <stack>
+#include <queue>
+#include <unordered_map>
 #include <utility>
 #include <algorithm>
 
@@ -52,8 +52,31 @@ void changeTree(TreeNode* root) {
     if(root->left || root->right) root->val = tot;
 }
 
+// Print all the Nodes at a distance of K in Binary Tree
+class Solution {
+private:
+    void markParents(TreeNode* root, TreeNode* target, unordered_map<TreeNode*, TreeNode*> &parent_track) {
+        queue<TreeNode*> q;
+        q.push(root);
+        while(!q.empty()) {
+            TreeNode *cur = q.front();
+            q.pop();
+            if(cur->left) {
+                parent_track[cur->left] = cur;
+                q.push(cur->left);
+            }
+            if(cur->right) {
+                parent_track[cur->right] = cur;
+                q.push(cur->right);
+            }
+        }
+    }
+public:
+    vector<int> distanceK(TreeNode* root, TreeNode* target, int k) {
+        unordered_map<TreeNode*, TreeNode*> parent_track;
+        markParents(root, target, parent_track);
+    }
+};
 
 
-
-
-// Note repeat: 14, 
+// Note repeat: 14, 30
