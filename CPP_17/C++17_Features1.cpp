@@ -688,6 +688,52 @@ void T_integral_constant() {
     // Uese regular auto deduction rules (auto const, auto&, auto&&, etc)
 }
 
+
+/*  Variables can now be inlinejust like functions.
+They may be defined in more than one translation unit as long
+as the definitions are identical
+    The definition must be present in a translation unit that
+access an inline variable.
+    An inline variabke with external lingage (e.g. not static):
+    * Must be declared inline in every translation unit.
+    * Has the same address in every translation unit.
+    A static constexpr member variable is implicitly inline. */
+
+
+template <typename... Xs>
+constexpr auto make_storage(Xs... xs) {
+    auto storage = [=](auto f) { return f(xs...); };
+    return storage;
+}
+
+// template <typename... Xs>
+// struct tuple {
+//     explicit constexpr tuple(Xs... xs) : storage{ make_storage(xs...) } {}
+//     decltype(make_storage(declval<Xs>()...)) storage;
+// }
+
+// template <size_t N, typename... t>
+// constexpr decltype(auto) get(tuple<T...>& t) {
+//     return t.storage([] (auto&&... xs) { })
+// }
+
+
+#if __has_include(<string_view>)
+    #include <string_view>
+    #define HAVE_STRING_VIEW 1
+#elif __has_include(<experimental/string_view>)
+    #include <experimental/string_view>
+    #define HAVE_STRING_VIEW 1
+    #define HAVE_EXP_STRING_VIEW 1
+#else
+    #define HAVE_STRING_VIEW 0
+#endif
+
+// https://www.youtube.com/watch?v=fI2xiUqqH3Q
+
+// for tuple
+// https://www.youtube.com/watch?v=Gycxew-hztI
+
 int main() {
 
     // test_Type_based_branching();

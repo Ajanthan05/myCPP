@@ -1,0 +1,81 @@
+HashMap internal structur
+LRU cash
+Arrays linklist maps
+search sor trees  pree in post order triversal
+QUick sort
+
+Graphs backtracking recursion heaps priorityQueues
+
+Blind 75 or Blind 150
+DP tries unionSets
+
+
+repeat G20 G22 G23
+https://leetcode.com/discuss/post/248131/microsoft-interview-round-1-alien-dictio-yu0z/
+
+
+nonexpect https://www.youtube.com/watch?v=3GwNjGMKBtI
+quary striver https://www.youtube.com/watch?v=NEG-SoyigGE
+
+
+Understand
+gready 12
+
+
+static methods cannot access non static variables :- static method doesn't have class instant
+
+lock_guard
+
+inline
+class design https://www.youtube.com/watch?v=motLOioLJfg
+C++ metaprogramming idiom 
+https://www.youtube.com/watch?v=iz5Qx18H6lg
+
+RAII after thread https://www.youtube.com/watch?v=Rfu06XAhx90
+https://www.youtube.com/watch?v=q6dVKMgeEkk
+
+function pointer
+
+Hash Table (in C)		https://www.youtube.com/watch?v=2Ti5yvumFTU
+
+thread https://www.youtube.com/watch?v=dSx2ixT8yaM&list=PLk6CEY9XxSIAeK-EAh3hB4fgNvYkYmghp&index=19&ab_channel=CppNuts
+after thread	https://www.youtube.com/watch?v=K3P_Lmq6pw0&ab_channel=CppCon
+ https://www.youtube.com/watch?v=_qaKkHuHYE0&ab_channel=CppCon
+
+std::integral_constant  https://www.youtube.com/watch?v=MKes-sG3zAU
+
+
+templat meta programing https://www.youtube.com/watch?v=-QuFIF8ucI4&list=PLWxziGKTUvQFIsbbFcTZz7jOT4TMGnZBh&index=6&ab_channel=BitsOfQ
+https://www.youtube.com/watch?v=tiAVWcjIF6o&t=333s&ab_channel=CppCon
+
+
+when nanosond mater https://www.youtube.com/watch?v=sX2nF1fW7kI
+Applied Best Practices  https://www.youtube.com/watch?v=DHOlsEd0eDE&ab_channel=CppCon
+Advance c++20 https://www.youtube.com/watch?v=FRkJCvHWdwQ&ab_channel=CppCon
+linker https://www.youtube.com/watch?v=cpkDQaYttR4&t=3368s
+
+C++ Network Programming  https://www.youtube.com/watch?v=gntyAFoZp-E
+
+macro https://www.youtube.com/watch?v=6KNdGnUiRBM&ab_channel=CppCon
+
+robotics https://www.youtube.com/shorts/V-PGP6sjgPM
+
+song https://www.youtube.com/watch?v=9LBv1TOfo40&ab_channel=KalaippuliSThanu
+https://www.youtube.com/watch?v=Agi5dWi-Q-w&ab_channel=StarMusicIndia
+
+movies https://www.youtube.com/shorts/ocSYtHgKf6Y
+
+subliment l theanine
+
+
+vpn
+https://www.youtube.com/watch?v=EcCPx24VGF8&list=PLMTN_yZ-uifLnAw7xZ3LpcRwXiqzhkDSx&index=4
+
+swiming https://www.youtube.com/results?search_query=jtag+tutorial
+
+
+startup ecp32 c5
+open bmc, htm booboards, esp idf, nero edge, esp now, addverb technologies, jetson, anser robeotic
+
+
+Bangalore

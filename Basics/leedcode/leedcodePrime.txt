@@ -16,3 +16,11 @@ DP https://leetcode.com/problems/evaluate-boolean-expression/description/
 
 trie
 https://leetcode.com/problems/longest-word-with-all-prefixes/description/
+
+
+
+https://leetcode.com/problems/find-the-celebrity/description/
+
+
+has to do
+https://leetcode.com/problems/minimize-maximum-value-in-a-grid/description/
