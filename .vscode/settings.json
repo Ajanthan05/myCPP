@@ -93,6 +93,7 @@
         "valarray": "cpp",
         "variant": "cpp",
         "util.h": "c",
-        "format": "cpp"
+        "format": "cpp",
+        "pthread.h": "c"
     }
 }

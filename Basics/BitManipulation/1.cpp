@@ -2,6 +2,8 @@
 #include <string>
 #include <map>
 #include <climits>
+#include <vector>
+using namespace std;
 
 std::string convert2Binary(int n) {
     std::string res;
@@ -94,21 +96,68 @@ The issue occurs because dividing INT_MIN (-2147483648) by -1 causes overflow, a
         return ans;
 }
 
+
+
+
+
+
+
+//////////////////////  NEW /////////////////////////////////////
+
+void commonly_used() {
+    /*  🔹 1. Isolate the rightmost set bit
+    Extract the lowest bit that is set.
+    Used in subset generation, finding differing bits, etc.*/
+    int n = 5;
+    int rightmostSetBit = n & -n;
+
+    /*  🔹 2. Clear the rightmost set bit
+    Removes the lowest set bit.
+    Useful in counting set bits.*/
+    n = n & (n - 1);
+
+    // 3. Set the right most to zero bit:- Turns the first 0 (from right) into 1.
+    n = n | (n + 1);
+
+    // 4. Isolate the rightmost 0 bit:- Gives a number with only the rightmost 0-bit set.
+    n = 3;
+    int bit = ~n & (n + 1);
+    cout << "Isolate the rightmost 0 bit: " << bit << "\n";
+}
+
+std::pair<int, int> findTwoUniques(const std::vector<int>& arr) {
+    int xorSum = 0;
+    for (int num : arr) xorSum ^= num;
+
+    int bit = xorSum & -xorSum; // rightmost set bit
+
+    int x = 0, y = 0;
+    for (int num : arr) {
+        if (num & bit) x ^= num;
+        else y ^= num;
+    }
+    return {x, y};
+}
+
 int main() {
 
-    std::string ans = convert2Binary(4);
-    std::cout << ans << "\n";
+    // std::string ans = convert2Binary(4);
+    // std::cout << ans << "\n";
 
-    std::cout << bin2Decimal("100") << "\n";
-    std::string binary = "1101"; // Binary for 13
-    int decimal = bin2Decimal(binary);
-    std::cout << "Decimal value: " << decimal << std::endl;
+    // std::cout << bin2Decimal("100") << "\n";
+    // std::string binary = "1101"; // Binary for 13
+    // int decimal = bin2Decimal(binary);
+    // std::cout << "Decimal value: " << decimal << std::endl;
 
-    int arr[] = {4,1,2,1,2};
-    int size = sizeof(arr) / sizeof(arr[0]);
-    std::cout << findSingleElement(arr, size) << "\n";
+    // int arr[] = {4,1,2,1,2};
+    // int size = sizeof(arr) / sizeof(arr[0]);
+    // std::cout << findSingleElement(arr, size) << "\n";
 
-    std::cout << "divide_WoithOut_mul_devide: " << divide_WoithOut_mul_devide(22, 3) << "\n";
-    std::cout << "divide_WoithOut_mul_devide: " << divide_WoithOut_mul_devide(22, -3) << "\n";
+    // std::cout << "divide_WoithOut_mul_devide: " << divide_WoithOut_mul_devide(22, 3) << "\n";
+    // std::cout << "divide_WoithOut_mul_devide: " << divide_WoithOut_mul_devide(22, -3) << "\n";
+ 
+    commonly_used();
+
+
     return 0;
 }

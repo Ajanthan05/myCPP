@@ -43,7 +43,6 @@ int recursive_srarch(int arr[], int low, int high, int target) {
 }
 
 /*      LOWER BOUND */
-
 // TC = O(log2(N))
 int lower_bound(int arr[], int n, int target) {
     int low = 0;
@@ -67,7 +66,11 @@ int lower_bound(int arr[], int n, int target) {
 }
 
 
-/* */
+/* Lower_bound: Smallest index where the element at that index was greater than equal to target
+        arr[ind] >= target
+    Upper_bound: Smallest index where the element at that index was greater than         target
+        arr[ind] > target
+*/
 
 int Lower_bound(std::vector<int>&  arr, int n, int target) {
     int low = 0;
@@ -114,7 +117,7 @@ int Upper_bound(std::vector<int>&  arr, int n, int target) {
 std::pair<int, int> First_and_Last_Occurrences(std::vector<int>& nums, int target) {
     int n = nums.size();
     int lb = Lower_bound(nums, n, target);
-    if (lb == n || nums[lb] == target) return {-1, -1};
+    if (lb == n || nums[lb] != target) return {-1, -1};
     return {lb, Upper_bound(nums, nums.size(), target) - 1};
 }
 
@@ -127,14 +130,13 @@ int First_Occurrences(std::vector<int>& nums, int target, int n) {
     int first = n;
 
     while(low <= high) {
-        // mid = (low + high) / 2;
-        mid = low + (high - low ) / 2; // Overflow case
+        mid = low + (high - low ) / 2; 
 
         if (target == nums[mid]) {
             first = mid;
             high = mid-1;
         }
-        else if (target >= nums[mid]) {
+        else if (target > nums[mid]) {
             low = mid + 1;
         }
         else {
@@ -150,14 +152,13 @@ int Last_Occurrences(std::vector<int>& nums, int target, int low, int n) {
     int last = n;
 
     while(low <= high) {
-        // mid = (low + high) / 2;
-        mid = low + (high - low ) / 2; // Overflow case
+        mid = low + (high - low ) / 2; 
 
         if (target == nums[mid]) {
             last = mid;
-            high = mid-1;
+            low = mid+1;                // Note
         }
-        else if (target >= nums[mid]) {
+        else if (target > nums[mid]) {
             low = mid + 1;
         }
         else {

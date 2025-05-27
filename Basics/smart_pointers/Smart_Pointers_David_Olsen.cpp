@@ -19,10 +19,10 @@ pointers by automatically deleting the objects they point to when no longer need
 
 /*  std::unique_ptr
 Feature	Description
-🎯 Exclusive ownership	One and only one unique_ptr can own the object
-🔐 No memory leaks	Deletes object automatically when done
-🛡️ Exception safe	Memory cleaned even if an exception is thrown
-💨 Fast, lightweight	Just a pointer under the hood
+* Exclusive ownership	One and only one unique_ptr can own the object
+* No memory leaks	Deletes object automatically when done
+* Exception safe	Memory cleaned even if an exception is thrown
+* Fast, lightweight	Just a pointer under the hood
 Pros:
 Lightweight and fast.
 Prevents accidental sharing.
@@ -36,7 +36,7 @@ std::unique_ptr<int> ptr1 = std::make_unique<int>(10);
 std::unique_ptr<int> ptr2 = std::move(ptr1); // ptr1 becomes nullptr
 
 void UniquePtr() {
-    /*  🧱 Custom Deleters
+    /*  *** Custom Deleters
     You can use custom deleters — e.g., for arrays or special cleanup logic.
     */
     auto deleter = [](int* p) {

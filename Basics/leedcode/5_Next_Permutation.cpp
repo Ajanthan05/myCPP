@@ -1,6 +1,10 @@
 #include <iostream>
 #include <vector>
 #include <climits>
+#include <algorithm>
+
+using namespace std;
+
 
 /* TC= O(3N)
 SC = O(1)  not using extra space */ 
@@ -28,6 +32,8 @@ void nextPermutation(vector<int>& nums) {
     /* TC= O(N)*/
     std::reverse(nums.begin() + index + 1, nums.end());
 }
+
+// std::next_permutation
 
 int main() {
 

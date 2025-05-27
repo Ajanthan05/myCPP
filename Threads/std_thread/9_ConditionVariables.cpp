@@ -1,16 +1,13 @@
 #include <iostream>
 #include <thread>
 #include <mutex>
-#include <atomic>
-#include <vector>
 
 #include <condition_variable>
 using namespace std;
 
 /*  CV are used in 2 purpose
 1) Notify other threads a. notify_one(), b. notify_all()
-2) Waiting for some condition
-*/
+2) Waiting for some condition*/
 
 std::condition_variable cv;
 std::mutex m;
