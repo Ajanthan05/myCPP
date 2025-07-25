@@ -40,7 +40,7 @@ string graphColoring(vector<vector<int>> &mat, int m) {
 
 
 int main() {
-
+    // bool graph[101][101];
     vector<vector<int>> mat = {{0,1,0}, {1,0,1}, {0,1,0}};
     cout << graphColoring(mat, 3) << "\n";
     return 0;

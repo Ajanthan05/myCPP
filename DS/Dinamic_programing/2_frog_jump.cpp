@@ -25,9 +25,9 @@ int frogJump_dp(int ind, std::vector<int> &heights, std::vector<int> &dp)
 {
     if (ind == 0) return 0;
     if (dp[ind] != -1) return dp[ind];
-    int left = frogJump(ind-1, heights) + abs(heights[ind] - heights[ind-1]);
+    int left = frogJump_dp(ind-1, heights) + abs(heights[ind] - heights[ind-1]);
     int right = INT_MAX;
-    if (ind > 1) right = frogJump(ind-2, heights) + abs(heights[ind] - heights[ind-2]);
+    if (ind > 1) right = frogJump_dp(ind-2, heights) + abs(heights[ind] - heights[ind-2]);
     return dp[ind] = std::min(left, right);
 }
 

@@ -298,7 +298,8 @@ struct A {
 struct B {
     virtual void foo() {}  // NOT trivially copyable
 };
-/*  Trivial constructor: a constructor that does nothing (compiler-provided, no user-defined body, and no base/virtual classes doing complex logic).
+/*  Trivial constructor: a constructor that does nothing (compiler-provided, 
+no user-defined body, and no base/virtual classes doing complex logic).
 What Disqualifies a Type?
 Having virtual functions
 
@@ -314,7 +315,7 @@ void Trivial_and_Trivially_Copyable_Clarification() {
 }
 
 // — Uniform Initialization
-std::atomic<int> x{0}; 
+std::atomic<int> x{0};  // Not x = 0;   x(0); Is Ok 
 // This uses direct initialization via brace-init-list (C++11 and beyond)
 /*  Internally calls std::atomic(int desired) constructor.
 
@@ -332,21 +333,19 @@ std::atomic<int> x(0);	✅	Calls explicit constructor
 x++;         // Atomic post-increment
 x += 1;      // Atomic fetch_add
 x |= 2;      // Atomic fetch_or (bit set)
-All of the above are atomic read-modify-write operations — they map to hardware atomic instructions (e.g., LOCK ADD on x86).
+All of the above are atomic read-modify-write operations — they map to hardware 
+atomic instructions (e.g., LOCK ADD on x86).
 
 ❌ Non-Atomic Expressions
 These look atomic, but they're not fully atomic:
 x = x + 1;
 x = x * 2;
 These are two separate operations:
-
-Atomic read of x
-
-Then normal arithmetic
-
-Then atomic write to x
-
-Problem: Between the read and write, another thread might have modified x. This introduces a race condition.
+    1. Atomic read of x
+    2. Then normal arithmetic
+    3. Then atomic write to x
+Problem: Between the read and write, another thread might have modified x. 
+This introduces a race condition.
 
 std::atomic<int> x{0};
 ++x; // Atomic pre-increment
@@ -391,13 +390,12 @@ void lock() {
 }
 
 /*  std::atomic_flag — The Simplest Atomic Lock Primitive
-std::atomic_flag is the only atomic type guaranteed to be lock-free on all platforms. It’s specifically designed for use cases like spinlocks, and:
+std::atomic_flag is the only atomic type guaranteed to be lock-free on all platforms. 
+It’s specifically designed for use cases like spinlocks, and:
 
 It supports just two operations:
-
-test_and_set()
-
-clear()
+    1. test_and_set()   // it return previous value
+    2. clear()
 
 No copy/move, no load/store — just binary state.
 
@@ -457,14 +455,14 @@ But both happen as a single atomic operation — no thread can intervene in betw
 }
 
 // Simple CAS Loop
-std::atomic<int> counter = 0;
+std::atomic<int> Counter = 0;
 
-void increment() {
+void Increment() {
     int expected, desired;
     do {
-        expected = counter.load();
+        expected = Counter.load();
         desired = expected + 1;
-    } while (!counter.compare_exchange_weak(expected, desired));
+    } while (!Counter.compare_exchange_weak(expected, desired));
 }
 /*  When to Use compare_exchange?
 Implementing lock-free data structures
@@ -474,15 +472,375 @@ Avoiding mutex or lock_guard when performance matters
 
 | Property                         | `compare_exchange_weak` | `compare_exchange_strong` |
 | -------------------------------- | ----------------------- | ------------------------- |
-| May fail spuriously              | ✅ Yes                   | ❌ No                      |
-| More efficient on some platforms | ✅                       | ❌                         |
-| Use in loops                     | ✅ Recommended           | ✅ Optional                |
+| May fail spuriously              | ✅ Yes                  | ❌ No                     |
+| More efficient on some platforms | ✅                      | ❌                        |
+| Use in loops                     | ✅ Recommended          | ✅ Optional               |
+
+x.compare_exchange_strong(old_x, new_x):
+if (x == old_x) { x = new_x; return true; }
+else { old_x = x; return false; }
+ x.compare_exchange_weak(old_x, new_x): same thing
+but can “spuriously fail” and return false even if x==old_x
+
+ What is the value of old_x if this happens? Must be old_x!
+ If weak CAS correctly returns x == old_x, why would it fail?
+
+ CAS, conceptually (pseudo-code):
+bool compare_exchange_strong(T& old_v, T new_v) {
+ Lock L; // Get exclusive access
+ T tmp = value; // Current value of the atomic
+ if (tmp != old_v) { old_v = tmp; return false; }
+ value = new_v;
+ return true;
+}
+ Lock is not a real mutex but some form of exclusive access
+implemented in hardware
+
+ If exclusive access is hard to get, let someone else try:
+bool compare_exchange_weak(T& old_v, T new_v) {
+ T tmp = value; // Current value of the atomic
+ if (tmp != old_v) { old_v = tmp; return false; }
+ TimedLock L; // Get exclusive access or fail
+ if (!L.locked()) return false; // old_v is correct
+ tmp = value; // value could have changed!
+ if (tmp != olv_v) { old_v = tmp; return false; }
+ value = new_v;
+ return true;
+}
+ Double-checked locking pattern is back!
 */
 
+
+void Other() {
+    std::atomic<float> a{3.5f};
+    float y = 9.5f;
+    float Prev =  a.fetch_add(y); // It return old value
+    cout << "Prev: " << Prev << " Cur: " << a.load() << "\n";
+    /*  fetch_sub(), . fetch_and(), .fetch_or(), .fetch_xor() */
+}
+
+
+/*  
+| Feature               | `std::lock_guard` | `std::unique_lock` |
+| --------------------- | ----------------- | ------------------ |
+| Automatically locks   | ✅ Yes             | ✅ Optional         |
+| Can unlock manually   | ❌ No              | ✅ Yes              |
+| Can be deferred       | ❌ No              | ✅ Yes              |
+| Can be moved          | ❌ No              | ✅ Yes (move-only)  |
+| Supports `try_lock()` | ❌ No              | ✅ Yes              |
+| More overhead         | ❌ No              | ✅ Slightly more    |
+
+*/
+ 
+struct A_ { long x; };
+struct B_ { long x; long y; };
+struct C_ { long x; long y; long z; };
+struct D { int x; int y; int z; };
+
+void is_LogFree() {
+    std::atomic<A_> a;
+    std::cout << a.is_lock_free() << "\n";
+    std::cout << std::atomic<B_>::is_always_lock_free << "\n";
+
+/*  What does lock-free mean?
+An atomic type is lock-free if it uses hardware atomic instructions (like LOCK CMPXCHG) and does not use a mutex or spinlock internally.
+Lock-free ⇒ fast, low-overhead, no blocking
+Not lock-free ⇒ fallback to heavier synchronization (like futex, pthread_mutex, etc.)
+
+std::atomic<T> requires that T be trivially copyable
+
+If T is too large or misaligned, the compiler will use internal locking
+
+| Struct | Size (typically) | Lock-Free?                                     |
+| ------ | ---------------- | ---------------------------------------------- |
+| `A_`   | 8 bytes          | ✅ Often lock-free (fits in a register)        |
+| `B_`   | 16 bytes         | ⚠️ Maybe lock-free (on x86-64 with CMPXCHG16B) |
+| `C_`   | 24 bytes         | ❌ Usually not lock-free (too big)             |*/
+
+    if constexpr (std::atomic<D>::is_always_lock_free()) {
+        std::cout << "D is always lock-free\n";
+    } else {
+        std::cout << "D may not be lock-free\n";
+    }
+/* Trivially copyable	✅ Yes (this is true for D)
+Hardware supports it	✅ e.g., x86-64 with CMPXCHG16B supports 16-byte lock-free
+    BUT
+
+❌ Why D is not lock-free
+12 bytes is not a common atomic width:
+
+Most platforms support atomic operations on 1, 2, 4, 8 bytes.
+
+Some CPUs support 16 bytes (128-bit atomics, e.g., with CMPXCHG16B).
+
+12 bytes has no native hardware support.
+
+Atomic types require full-width atomicity:
+
+The CPU must be able to read/write the entire 12-byte object atomically.
+
+No common CPU supports 96-bit atomic instructions.
+
+Fallback to internal locks:
+
+If the hardware doesn’t support atomic ops on that size/type, std::atomic<D> will use a mutex or spinlock internally.
+
+This makes it not lock-free.
+
+*/
+}
+
+// Atomic queue:
+int q[N];
+std::atomic<size_t> front;  //  Atomic variable is an index to (non-atomic) memory
+void push(int x) {
+    size_t my_slot = front.fetch_add(1);
+    q[my_slot] = x;
+}
+
+// ✅ Full Code: Lock-Free Stack with Tagged Pointer
+struct Node_s {
+    int value;
+    Node_s* next;
+    Node_s(int v) : value(v), next(nullptr) {}
+};
+/*  Then store std::atomic<TaggedPtr> head. Every time we update the head, we bump the tag so even if ptr is reused, the version mismatch prevents ABA.
+
+Even if a Node_s* gets reused at the same memory address, the tag ensures the pointer is not seen as "unchanged".
+
+This eliminates classic ABA issues in lock-free lists.*/
+
+// Tagged pointer to avoid ABA problem
+struct TaggedPtr {
+    Node_s* ptr;
+    uint64_t tag;
+
+    bool operator==(const TaggedPtr& other) const {
+        return ptr == other.ptr && tag == other.tag;
+    }
+};
+
+class LockFreeStack {
+    std::atomic<TaggedPtr> head;
+
+public:
+    LockFreeStack() {
+        head.store({nullptr, 0});
+    }
+
+    void push(int value) {
+        Node_s* new_node = new Node_s(value);
+        TaggedPtr old_head = head.load(std::memory_order_acquire);
+        TaggedPtr new_head;
+
+        do {
+            new_node->next = old_head.ptr;
+            new_head.ptr = new_node;
+            new_head.tag = old_head.tag + 1;
+        } while (!head.compare_exchange_weak(
+            old_head, new_head,
+            std::memory_order_release,
+            std::memory_order_acquire));
+    }
+
+    bool pop(int& out_value) {
+        TaggedPtr old_head = head.load(std::memory_order_acquire);
+        TaggedPtr new_head;
+
+        do {
+            if (!old_head.ptr)
+                return false; // empty stack
+
+            Node_s* node = old_head.ptr;
+            new_head.ptr = node->next;
+            new_head.tag = old_head.tag + 1;
+
+            out_value = node->value;
+
+        } while (!head.compare_exchange_weak(
+            old_head, new_head,
+            std::memory_order_release,
+            std::memory_order_acquire));
+
+        delete old_head.ptr;
+        return true;
+    }
+
+    ~LockFreeStack() {
+        int val;
+        while (pop(val)) {}
+    }
+};
+
+void Test_LockFreeStack() {
+    LockFreeStack stack;
+
+    stack.push(10);
+    stack.push(20);
+    stack.push(30);
+
+    int value;
+    while (stack.pop(value)) {
+        std::cout << value << "\n";
+    }
+}
+
+
+
+/*  What is Memory Ordering?
+CPUs and compilers can reorder instructions for optimization. 
+This can break correctness in multithreaded code unless properly synchronized.
+
+C++ Atomic Memory Orders
+cpp
+Copy
+std::memory_order_relaxed
+std::memory_order_acquire
+std::memory_order_release
+std::memory_order_acq_rel
+std::memory_order_seq_cst
+
+
+memory_order_acquire ensures:   All reads/writes after the lock stay after the lock
+
+memory_order_release ensures:   All writes before the unlock are visible before the unlock*/
+
+
+
+
+/*  Low-level memory control (allocators, embedded)
+You can manually align memory:
+
+alignas(16) int buffer[4]; // align the buffer on a 16-byte boundary
+Used in:
+    SIMD (e.g., SSE, AVX)
+    Custom allocators
+    Hardware programming
+
+    Template metaprogramming
+
+template<typename T>
+void print_alignment() {
+    std::cout << alignof(T) << "\n";
+}
+Useful for writing portable, alignment-aware code.
+
+⚠️ Alignment and Atomics
+Atomic types require specific alignment to be lock-free.
+
+struct alignas(16) MyAtomicData {
+    long long a;
+    long long b;
+};
+std::atomic<MyAtomicData> data; // More likely to be lock-free if aligned
+If the alignment is wrong, even if the size is supported (like 16 bytes), atomic operations may fall back to locks.
+
+*/
+
+
+
+template<typename T>
+class RingBuffer {
+public:
+    explicit RingBuffer(size_t size) : buffer(size), head(0), tail(0), count(0) {}
+
+    void push(const T& item) {
+        std::unique_lock<std::mutex> lock(mtx);
+        not_full.wait(lock, [this]() { return count < buffer.size(); });
+
+        buffer[head] = item;
+        head = (head + 1) % buffer.size();
+        ++count;
+
+        lock.unlock();
+        not_empty.notify_one();
+    }
+
+    T pop() {
+        std::unique_lock<std::mutex> lock(mtx);
+        not_empty.wait(lock, [this]() { return count > 0; });
+
+        T item = buffer[tail];
+        tail = (tail + 1) % buffer.size();
+        --count;
+
+        lock.unlock();
+        not_full.notify_one();
+        return item;
+    }
+
+private:
+    std::vector<T> buffer;
+    size_t head, tail, count;
+    std::mutex mtx;
+    std::condition_variable not_empty, not_full;
+};
+
+
+
+
+
+
+/*  Spin-wait loop used for thread synchronization without blocking, and here's 
+exactly what it does and when you might use it (and when not to).
+
+while (!done) std::this_thread::yield();
+🔷 Explanation
+done:
+A shared flag, usually volatile or std::atomic<bool>, that indicates a task is complete.
+
+std::this_thread::yield();
+Tells the CPU:
+
+"I'm busy-waiting. Let another thread run now."
+
+This avoids hogging the CPU while still staying in a tight loop.
+
+Without yield(), the loop becomes:
+while (!done); // BAD: tight spin loop — burns CPU
+
+✅ When to Use Spin-Wait + yield()
+When wait time is expected to be short (microseconds or milliseconds).
+You want low latency: as soon as done becomes true, you're ready.
+You cannot afford blocking overhead (like mutex or condition_variable).
+E.g., lock-free queues, real-time control loops, some embedded scenarios.
+
+⚠️ When Not to Use It
+If the wait time could be longer (hundreds of ms or seconds) → wastes CPU.
+If many threads are waiting like this → bad for scalability.
+Better alternatives in those cases:
+    std::condition_variable
+    std::future::get() (waits automatically)
+    std::this_thread::sleep_for(...) (adds delay between checks)
+
+
+*/
+
+std::atomic<bool> done = false;
+void worker() {
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    done = true;
+}
+void Spin_Wait() {
+    std::thread t(worker);
+
+    // Spin-wait
+    while (!done) std::this_thread::yield();
+
+    std::cout << "Worker finished!\n";
+    t.join();
+}
+
+
+// is_always_log_free
 // Would you like help writing a custom atomic multiply using CAS (compare_exchange)?
 // Would you like to see a std::atomic<bool> version of the spinlock or a scoped version with RAII?
 int main() {
 
     T_LL();
+
+    Other();
+
+    is_LogFree();
     return 0;
 }

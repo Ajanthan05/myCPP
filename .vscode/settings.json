@@ -94,6 +94,15 @@
         "variant": "cpp",
         "util.h": "c",
         "format": "cpp",
-        "pthread.h": "c"
-    }
+        "pthread.h": "c",
+        "__nullptr": "cpp",
+        "__node_handle": "cpp",
+        "__config": "cpp",
+        "__bit_reference": "cpp",
+        "climits": "cpp",
+        "stdint.h": "c",
+        "filesystem": "cpp",
+        "unistd.h": "c"
+    },
+    "C_Cpp.errorSquiggles": "disabled"
 }

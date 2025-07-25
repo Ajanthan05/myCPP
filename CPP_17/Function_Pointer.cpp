@@ -54,9 +54,6 @@ void process(int x, int (*op)(int)) {
 /*  NOTE
 the & is actually optional when referring to a function. Both of these are valid and equivalent:
 
-c
-Copy
-Edit
 int (*function_ptr)(int, int) = add;     // ✅ No & needed
 int (*function_ptr)(int, int) = &add;    // ✅ With &
 This is because the function name add decays to a pointer to the function automatically when used in this context 
@@ -84,6 +81,7 @@ void array_fun_ptr() {
 }
 
 // 🔹 Typedef for Clean Syntax  Using typedef or using (C++11) can make your life easier:
+
 
 
 

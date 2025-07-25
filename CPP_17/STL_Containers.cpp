@@ -7,6 +7,7 @@
 #include <utility>
 #include <algorithm>
 #include <stack>
+#include <list>
 
 using namespace std;
 
@@ -137,10 +138,63 @@ void test2() {
 }
 
 
+
+
+/*  td::unordered_set::insert()
+When you insert into a std::unordered_set, the insert() function returns a std::pair
+
+.first → an iterator to the inserted element or the element that already existed.
+.second → a bool:
+    true if the element was inserted (i.e., it did not exist before).
+    false if the element already existed (i.e., duplicate).*/
+
+
+void printL(list<int> &l) {
+    for(auto i : l) {
+        cout << i << " ";
+    }
+    cout << "\n";
+}
+
+void List() {
+    // Statement list<int> l3(5, 9) creates a list of 5 elements, each initialized to 9.
+    list<int> l(3, 5);  
+    printL(l);
+
+    l.push_front(1);
+    l.push_back(9);
+
+    auto it = l.begin();
+
+    advance(it, 2);
+    cout << *it << "\n";
+
+    // Accessing first and last elements
+    cout << l.front() << endl;
+    cout << l.back() << endl;
+    
+    // Access third element
+    cout << "Access third element: " << *next(l.begin(), 2) << "\n";
+
+    
+
+    // Finding 4
+    auto it2 = find(l.begin(), l.end(), 4);
+    
+    if (it2 != l.end()) cout << *it << "\n";
+    else {
+        cout << "Element Not Found! Add 3: ";
+
+        *next(l.begin(), 1) = 3;
+        printL(l);
+    }
+}
+
 int main() {
 
     test();
     test_tie();
 
+    List();
     return 0;
 }

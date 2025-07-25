@@ -104,6 +104,43 @@ double minimiseMaxDistance_BST(vector<int> &arr, int k) {
     }
     return high;
 }
+
+/*
+Imagine:
+
+Segment length: arr[i] - arr[i-1] = 10
+
+dist: 2
+
+Then:
+
+10 / 2 = 5
+
+Initially:
+
+numberInBetween = 5
+
+But 5 intervals of length 2 would be:
+
+2 2 2 2 2 = 10
+Here, you only need 4 gas stations (not 5) because:
+
+The segment can be perfectly divided with the original two endpoints and 4 extra gas stations.
+
+Example:
+|--2--|--2--|--2--|--2--|--2--|
+Positions:
+
+Start: 0
+
+2, 4, 6, 8
+
+End: 10
+
+Gas stations added:
+
+At 2, 4, 6, 8 (4 new stations)
+*/
 int main() {
 
 

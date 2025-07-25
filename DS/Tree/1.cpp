@@ -3,6 +3,7 @@
 #include <climits>
 #include <queue>
 #include <stack>
+#include <algorithm>
 
 struct Node 
 {
@@ -147,7 +148,7 @@ std::vector<int> iterative_preorder_traversal(struct Node *root) {
     st.push(root);
 
     while(!st.empty()) {
-        int size = st.size();
+        // int size = st.size();
         Node *node = st.top();
         st.pop();
         ans.push_back(node->data);
@@ -284,7 +285,16 @@ std::vector<int> iterativePostOrderTraversalOptimized(struct Node *root) {
     return ans; // Return the postorder traversal result
 }
 
+int Maximum_Depth_BT(Node *root) {
+    if (!root) return 0;
 
+    int lh = Maximum_Depth_BT(root->left);
+    int rh = Maximum_Depth_BT(root->right);
+
+    return 1 + std::max(lh, rh);
+}
+
+// Check for Balanced Binary Tree 
 int main() {
 /*
         1

@@ -31,7 +31,22 @@ int height_O(Node *node) {
     return std::max(height(node->left), height(node->right)) + 1;
 }
 
-/* Check for Balanced Binary Tree */
+/* Check for Balanced Binary Tree 
+for every node height_of_left - height_of_right <= 1
+*/
+// bool Brut_isBalanced(Node *root) {
+//     int lh = heightLefy(root->left);
+//     int rh = heightRight(root->right);
+
+//     if(lh - rh > 1) return false;
+
+//     bool left = Brut_isBalanced(root->left);
+//     bool right = Brut_isBalanced(root->right);
+
+//     if(!left || !right) return false;
+//     else return true;
+// }
+
 int checkBalance(Node *node) {
     if(node == NULL) return 0;
 

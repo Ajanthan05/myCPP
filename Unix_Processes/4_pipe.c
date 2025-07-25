@@ -9,9 +9,9 @@
 // Pipe is in memory file
 /* Aside from just getting copied over like 
 only the self from those integrals getting copued over behind the scenes
-Those file descriptors are also assigned to teh newly created process so they get inherited
-If u close the file descripter at the one point in a process , the other process 
-remain open
+Those file descriptors are also assigned to the newly created process so they get 
+inherited If u close the file descripter at the one point in a process , the other 
+process  remain open
 */
 int main() {
     int fd[2];

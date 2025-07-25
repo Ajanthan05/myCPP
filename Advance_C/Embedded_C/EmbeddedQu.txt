@@ -1,0 +1,33 @@
+NULL pointer is a special pointer that points nowhere. There is no other pointer will 
+be equalk to NULL pointer
+
+IST :- Interrupt Service Routine
+
+ISR does not return anything. Means there is no return.
+Also, there is none to read  the return value
+
+Latency means delay
+Interrupt Latency is the time required for the interruped to be responded
+
+Reduec the Latency incurred during ISR
+    U should write efficient and small ISRs ex:- Avoid loops
+    Do not desable interrupts
+    Avoid high latency instructions
+
+
+Volatile:- Mainly with the Registers
+When a global variable is shared / accessed by multiple threads or multiple tasks.
+Volatile can be used
+
+Nested Interrupt:- 
+
+
+RISC:- Reduce instructions set computer 
+
+RISC-V :- Open source instruction set architecture
+
+CISC:- Complex Instruction Set Computing
+
+RISC:- Reauced Instruction Set Computing
+    execute a smaller number of complex 
+    instruction to compute a processing activity

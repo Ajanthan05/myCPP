@@ -15,7 +15,7 @@ int f(int ind, int prevInd, vector<int>& nums, int n) {
     if(prevInd == -1 || nums[prevInd] < nums[ind]) {
         len = max(len, 1 + f(ind+1, ind, nums, n));
     }
-    return len;
+    return dp[ind][prevInd + 1] = len;
 }
 
 int lengthOfLIS(vector<int>& nums) {

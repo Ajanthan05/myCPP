@@ -44,11 +44,8 @@ class TokenPool_old {
         return t;
     }
 };
-/*  The code on this slide still has 
-a potential bug. What 
-happens if Token::create() 
-or push_back() throws an 
-exception?
+/*  The code on this slide still has a potential bug. What 
+happens if Token::create() or push_back() throws an exception?
  We’ve locked the mutex, but 
 the exception aborts 
 execution of this function, so 
@@ -63,16 +60,12 @@ done inside a destructor.*/
 
 
 
-
-
-
 /*  Important: You can't copy it, move it, or pass it around between functions.
 ➔ Because that would create multiple owners of the same lock, which would be unsafe.
 Because std::lock_guard disables copy and move.
 
 This behavior is intentional:
 It forces the lock to be tied to a scope — exactly like RAII.
-
 
 lock guard is not moveable. It can be little bit more efficient
 It doesn't have empty state
@@ -150,7 +143,7 @@ scoped_lock ➔ multiple locks, deadlock-safe.*/
 
 
 class TokenPool2 {
-    std::mutex mtx_;
+    mutable std::mutex mtx_;
     std::vector<Token> tokens_;
 
 public:
@@ -198,27 +191,27 @@ void DeadLock() {
 
 
 //////////////////////
-// std::mutex Mtx_1, Mtx_2;
+std::mutex Mtx_1, Mtx_2;
 
-// void task_A() {
-//     std::scoped_lock lock(Mtx_1, Mtx_2); // lock both together safely
-//     std::this_thread::sleep_for(std::chrono::milliseconds(100)); 
-//     std::cout << "Task A finished" << std::endl;
-// }
+void task_A() {
+    std::scoped_lock lock(Mtx_1, Mtx_2); // lock both together safely
+    std::this_thread::sleep_for(std::chrono::milliseconds(100)); 
+    std::cout << "Task A finished" << std::endl;
+}
 
-// void task_B() {
-//     std::scoped_lock lock(Mtx_1, Mtx_2); // lock both together safely
-//     std::this_thread::sleep_for(std::chrono::milliseconds(100));
-//     std::cout << "Task B finished" << std::endl;
-// }
+void task_B() {
+    std::scoped_lock lock(Mtx_1, Mtx_2); // lock both together safely
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    std::cout << "Task B finished" << std::endl;
+}
 
-// void Scoped_lock() {
-//     std::thread t1(task_A);
-//     std::thread t2(task_B);
+void Scoped_lock() {
+    std::thread t1(task_A);
+    std::thread t2(task_B);
 
-//     t1.join();
-//     t2.join();
-// }
+    t1.join();
+    t2.join();
+}
 
 
 
@@ -449,15 +442,18 @@ void wait_for_work() {
 }
 
 // You can lock multiple mutexes safely without deadlocks:
-std::mutex m1, m2;
+std::mutex m_1, m_2;
 void example() {
-    std::unique_lock<std::mutex> lk1(m1, std::defer_lock);
-    std::unique_lock<std::mutex> lk2(m2, std::defer_lock);
+    std::unique_lock<std::mutex> lk1(m_1, std::defer_lock);
+    std::unique_lock<std::mutex> lk2(m_2, std::defer_lock);
 
     std::lock(lk1, lk2);  // Deadlock-safe!
+    // Do work...
+    // Automatically unlocks when lk1 and lk2 go out of scope
 }
-/*  | Feature              | `std::lock_guard` | `std::unique_lock` |
-| -------------------- | ----------------- | ------------------ |
+/*  
+| Feature              | `std::lock_guard`  | `std::unique_lock`  |
+| -------------------- | -----------------  | ------------------  |
 | Automatic locking    | ✅                 | ✅ (by default)     |
 | Can defer locking    | ❌                 | ✅ (`defer_lock`)   |
 | Manual lock/unlock   | ❌                 | ✅                  |
@@ -491,10 +487,10 @@ void caller() {
 }
 
 // ✅ 4. Use with std::lock() for multiple mutexes:-   Deadlock-free locking of multiple mutexes
-std::mutex m1, m2;
+std::mutex m4_1, m4_2;
 void lockTwo() {
-    std::unique_lock<std::mutex> lk1(m1, std::defer_lock);
-    std::unique_lock<std::mutex> lk2(m2, std::defer_lock);
+    std::unique_lock<std::mutex> lk1(m4_1, std::defer_lock);
+    std::unique_lock<std::mutex> lk2(m4_2, std::defer_lock);
 
     std::lock(lk1, lk2);  // Avoids deadlock
 
@@ -502,13 +498,13 @@ void lockTwo() {
 
     /*  std::lock() — a special function in the C++ Standard Library designed to lock multiple mutexes atomically and safely.
 // Thread 1:
-lock(m1);
-lock(m2);
+lock(m4_1);
+lock(m4_2);
 
 // Thread 2:
-lock(m2);
-lock(m1);
-If Thread 1 locks m1 and Thread 2 locks m2 at the same time, both will wait forever trying to lock the other → ❌ Deadlock.
+lock(m4_2);
+lock(m4_1);
+If Thread 1 locks m4_1 and Thread 2 locks m4_2 at the same time, both will wait forever trying to lock the other → ❌ Deadlock.
 
 ✅ The Solution:
 std::lock(lk1, lk2);
@@ -520,7 +516,7 @@ If it can’t lock both immediately, it releases what it locked and tries again 
 
 🔁 std::defer_lock
 This is important:
-std::unique_lock<std::mutex> lk1(m1, std::defer_lock);
+std::unique_lock<std::mutex> lk1(m4_1, std::defer_lock);
 Means:
     1.Don’t lock the mutex now.
     2.Just associate the lock with the mutex.
@@ -528,22 +524,22 @@ Means:
 }
 
 // ✅ 5. With std::condition_variable:-    Often used for waiting on a condition
-std::mutex mtx;
-std::condition_variable cv;
-bool ready = false;
+std::mutex mtx1;
+std::condition_variable cv1;
+bool ready1 = false;
 
 void waitUntilReady() {
-    std::unique_lock<std::mutex> lk(mtx, std::defer_lock);
+    std::unique_lock<std::mutex> lk(mtx1, std::defer_lock);
 
     // prepare();
 
     lk.lock();  // lock before waiting
-    cv.wait(lk, [] { return ready; });
+    cv1.wait(lk, [] { return ready1; });
 }
 
 // ✅ 6. Retryable try-lock logic:-    Useful when you don’t want to block if the mutex is already held
 void tryLockLoop() {
-    std::unique_lock<std::mutex> lk(mtx, std::defer_lock);
+    std::unique_lock<std::mutex> lk(mtx1, std::defer_lock);
 
     for (int i = 0; i < 3; ++i) {
         if (lk.try_lock()) {
@@ -570,7 +566,7 @@ class TokenPool_DEFER_LOCK {
         // Simulate condition check or preparation
         std::this_thread::sleep_for(std::chrono::milliseconds(10)); // preparation phase
 
-        lock.lock();  // manually lock when ready
+        lock.lock();  // manually lock when ready1
 
         if (tokens_.empty()) {
             tokens_.push_back(Token::create());
@@ -592,7 +588,7 @@ std::unique_lock<std::mutex> lk(mtx, std::defer_lock);  // ❌ Defer locking
 cv.wait(lk);  // ❌ Undefined behavior: lk is not locked!*/
 
 // Token pool with condition variable
-struct TokenPool_condition_variable {
+struct TokenPool_condition_variable1 {
     std::mutex mtx;
     std::vector<Token> tokens_;
     std::condition_variable cv_;
@@ -622,7 +618,7 @@ struct TokenPool_condition_variable {
     }
 };
 // Worker function
-void worker_condition_variable(TokenPool_condition_variable& pool, int id) {
+void worker_condition_variable(TokenPool_condition_variable1& pool, int id) {
     Token t = pool.getToken();
     std::cout << "Thread " << id << " got a token\n";
     std::this_thread::sleep_for(std::chrono::milliseconds(200)); // simulate work
@@ -630,7 +626,7 @@ void worker_condition_variable(TokenPool_condition_variable& pool, int id) {
     std::cout << "Thread " << id << " returned a token\n";
 }
 int Test_condition_variable() {
-    TokenPool_condition_variable pool;
+    TokenPool_condition_variable1 pool;
     pool.addInitialTokens(2); // Start with 2 tokens
 
     std::vector<std::thread> threads;
@@ -752,13 +748,13 @@ class Logger {
     }
 };
 
-class Logger {
+class Logger1 {
     std::once_flag once_;
     std::optional<NetworkConnection> conn_;
 
     NetworkConnection& getCon() {
         /*  This mimics C++ does static initialization, but for a non-static.
-        Each Logger has its own conn_, protected by its own once_.
+        Each Logger1 has its own conn_, protected by its own once_.
             mimicking "magic statics" (function-local static variable behavior), but for non-static data members (i.e., per-instance rather than per-program).*/
         std::call_once(once_, [&]() {
             conn_ = NetworkConnection();
@@ -800,49 +796,7 @@ Cannot be used to modify the shared data
 
 
 
-/*  C++20 counting_semaphore */
-class AnonymousTokenPool {
-    std::counting_semaphore<256> sem_{100};// here 256 is max 100 initial
-    void getToken() {
-        sem_.acquire();  // may block
-    }
 
-    void requireToken() {
-        sem_.release();
-    }
-};
-
-using Sem = std::counting_semaphore<256>;
-struct SemReleaser {
-    bool operator()(Sem *s) const { s->release(); }
-};
-class UniwuePtrTokenPool {
-    Sem sem_{100};
-    using Token = std::unique_ptr<Sem, SemReleaser>;
-    Token borrowToken() {
-        sem_.acquire(); // may bolock
-        return Token(&sem_);
-    }
-};
-// Destroying a Token now automatically returns it to the pool.
-
-
-/*  C++20 std::latch
-* A latch is kind of like a semaphore, in that it has an integer counter that
-starts positive and counts down towards zero.
-* latch.wait() block until the counter release zero.
-* latch.count_down() decrements the counter.
-    If the counter reaches zero the this unblock all the writers.
-latch.arive_and_wait() decrements and begins waiting.`
-Use a std::latch as a one-shot "starting gate" mechanism: "Wait for
-everyone to arrive at this point, then unblock everyone simultaneously."
-latch is like one_flag in that there is no way to "reset" its counter.
-*/
-
-/*  Would you like a multithreaded example that uses this Logger class in action? 
-std::promise, std::future*/
-
-// CPAD hallway track
 int main() {
     /*
     thread tb = thread([&](){

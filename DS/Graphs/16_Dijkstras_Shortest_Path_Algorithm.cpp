@@ -113,6 +113,86 @@ vector<int> shortestPath(int n, int m, vector<vector<int>> &edge) {
     return path;
 }
 
+
+
+
+/*  dijkstra doesnt work in  Negative weight,
+    Negative cycle
+    
+    It will fall in infinite loop
+    
+    TC = E log V
+    E:- Total no of edges
+    V:- No of nodes
+    
+    Priority_queue:- Min at top
+    Set:- store unique values, smallest at top, Store every thing in assending order
+    
+    With set (insted of priority_queue) we can erase already exiating paths
+    Which take more distance => This will improve time complexicity
+    but st.erase() TC = logN 
+    
+    Dijkstra's algorithm TC = O ( v * v * log(heape size)) // Worst case consider ecery node is nonnected to other nodes -> V^2
+    TC = O ( v^2 * kog(V^2))
+    TC = O ( V^2 * 2 * logV )
+    TC = O ( E * logV)
+*/
+vector<int> dijkstar(int v, vector<vector<int>> adj[], int s) {
+    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq;
+    vector<int> dist(v, 1e9);
+
+    dist[s] = 0;
+    pq.push({0, s});  // dist, node
+
+    while(!pq.empty()) {
+        int dis = pq.top().first;
+        int node = pq.top().second;
+        pq.pop();
+
+        for(auto it : adj[node]) {
+            int edgeWeight = it[1];
+            int adjNode = it[0];
+
+            if (dis + edgeWeight < dist[adjNode]) {
+                dist[adjNode] = dis + edgeWeight;
+                pq.push({dist[adjNode], adjNode});
+            }
+        }
+    }
+    return dist;
+}
+
+
+vector<int> dijkstar_Path(int v, vector<vector<int>> adj[], int s, int e) {
+    
+    
+    set<pair<int, int>> st;
+    vector<int> dest(v, 1e9);
+    vector<int> parent(v);
+    for(int i=1; i<=v; i++) {
+        parent[i] = i;
+    }
+    dest[s] = 0;
+    st.insert({0, s});
+
+    while(!st.empty()) {
+        auto it = *(st.begin());
+        int node = it.second;
+        int dis = it.first;
+        st.erase(it);
+
+        for(auto it : adj[node]) {
+            int adjNode = it[0];
+            int edgW = it[1];
+
+            if(dis + edgW < dist[adjNode]) {
+                dist[adjNode] = dis + edgW;
+            }
+        }
+    }
+
+}
+
 int main() {
 
 
