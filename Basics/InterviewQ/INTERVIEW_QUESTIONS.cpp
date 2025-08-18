@@ -1115,6 +1115,72 @@ int main() {
     DerivedV::destroy(b);  // ✅ safe destruction
 }
 
+/*  inline function is a hint to the compiler to replace a function 
+call with the function code (to reduce function call overhead).
+
+1. Header files: Best place to define inline functions.
+                Ensures the compiler sees the definition in every 
+                translation unit that includes the header.
+
+Short utility/helper functions: Simple getter/setter methods.
+                                One-liners that are called frequently.
+
+Template functions: Must be defined in headers.
+                    Usually small and benefit from inlining.
+
+Performance-critical code: When profiling shows overhead from 
+                        small function calls.
+*/
+
+/*
+why we need lambda
+When
+
+deep coppy slow copy
+private
+What are the best practices in error handling
+
+what is kernal mode
+What is fragementation problem
+Paging and framing
+OSI
+*/
+
+
+/*  Placement New 
+New internaly calling kernal. User mode to kernal mode. 
+Kernel is searching for spase. Kernel return the space 
+Then we construct object on that space
+
+*/
+class BasePN {
+public:
+    BasePN() { cout << "Constructor\n"; }
+    ~BasePN() { cout << "Dictructor\n"; }
+};
+void Placement_New() {
+    char *memory = new char[10*sizeof(BasePN)];
+    BasePN *obj1 = new (&memory[0]) BasePN();
+    BasePN *obj2 = new (&memory[4]) BasePN();
+
+    // We have to clear the memory manually
+    // Only placement new only you must call the distructor
+    obj1->~BasePN();
+    obj2->~BasePN();
+    delete[] memory;
+}
+
+/*  Exceoption handling manages runtime errors using try, catch and throw.
+try block: holdes code that muignt cause an exception
+catch block: Handles exceptions thrown by the try block
+
+when a throw statement is encoundered the the program stops whatever
+is doing and jumps to the nearest catch block 
+
+
+*/
+
+
 int main() {
     
     // printf("%d\n", 5.3%5); // Mod % work only with integer

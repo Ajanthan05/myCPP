@@ -143,3 +143,38 @@ void TestWrapper() {
 
 template <template<typename, typename> class Map, typename K, typename V>
 class MapWrapper { };
+
+
+
+
+/*  explicit(bool) (C++20 feature)
+Since C++20, you can make explicit conditional in templates.
+
+*/
+template<typename T>
+struct Foo {
+    explicit(!std::is_integral_v<T>) Foo(T v) {}
+};
+
+int main() {
+    Foo<int> f1 = 5;     // ✅ allowed (not explicit for int)
+    Foo<double> f2 = 3.14; // ❌ requires explicit Foo<double>(3.14)
+}
+
+
+/*  EXTERN  
+Function/class templates are normally defined in headers because the compiler needs to see the full definition to instantiate them for specific types.
+
+That’s why you usually don’t write extern on templates — the compiler must see the code.*/
+
+// header.h
+extern template void foo<int>(int);   // declaration: don’t generate here
+
+template<typename T>
+void foo(T x) {
+    // definition must be visible somewhere
+}
+/*  Here extern template tells the compiler:
+👉 “Don’t instantiate foo<int> in this translation unit; it will be instantiated elsewhere.”
+
+This helps reduce code bloat from multiple instantiations across TUs.*/

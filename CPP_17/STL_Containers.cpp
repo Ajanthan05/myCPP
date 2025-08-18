@@ -8,6 +8,9 @@
 #include <algorithm>
 #include <stack>
 #include <list>
+#include <forward_list>
+#include <map>
+#include <set>
 
 using namespace std;
 
@@ -190,11 +193,157 @@ void List() {
     }
 }
 
+
+/*  Hash:- unordered map and unordered set use hash 
+Hashing Collision Resolution Techniques
+1. Chaining (Open Hashing)
+2. Open Addressing
+    a. Linear Probing (Next available) :- When u delete u need to put #
+    b. Quadratic Probing [h + i^2 % N] some time u may struct in a loop
+    c. Double Hashing
+        1) h1(k) = k%N
+        2) h2(k) = 8 - (k%8)
+
+Hashing (Prestoring and Fetching)
+arr[10^6] Inside main(int)   arr[10^7] arr[10^7]
+arr[10^7] Globaly,      arr[10^7] arr[10^8]
+
+map storing or fetching take log(N) time
+unordered_map :- Best case storing or fetching  take O(1) timeerage 
+                    Worst case O(N)
+
+Worst case happen because of internal colutions
+Hashing
+    1. Division Method
+    2. Folding Method
+    3. Mid Square Nethod
+
+internal colutions:- When every number went to same hashing plase( or Hash index)
+
+1
+2
+3 -> 13 23 43      
+
+
+*/
+
+/*  Forward_list:- single linked list
+assikgn, front, empty, max_size, insert_after, emplace_after,
+reverse, sort, merge, splice_after, unique, remove.
+remove if, resize
+
+unique :- only remove adjesent duplicate
+remove:- will remove all occurance of given value
+*/
+void Forward_list() {
+    std::forward_list<int> l = { 5,3,7,8,9};
+    l.remove_if([] (int n) { return n > 4; });
+}
+
+/*  MULTI_MAP is an associative container that contains a sorted lost of key-value pairs
+    while permitting multiple enteries with the same key.
+2. count, find, contains, equal_range, lower_bound, upper_bound
+3. We don't have at() and [] functions to get elements like we had in
+    std::map
+*/
+void MULTI_MAP() {
+    std::multimap<char, int, std::greater<>> m;
+    m.insert(make_pair('p', 1));
+    m.insert(make_pair('a', 3));
+    m.insert(make_pair('a', 2));
+    m.insert(pair<char, int>('d', 1));
+    m.insert(make_pair('x', 1));
+    m.insert({'d', 1});
+
+    for (auto& elm : m) {
+        cout << elm.first << " " << elm.second << "\n";
+    }
+    cout << "\n";
+
+    // Get all the pairs od given key
+    std::pair<std::multimap<char, int, std::greater<void>>::iterator, 
+              std::multimap<char, int, std::greater<void>>::iterator> range = m.equal_range('a');
+    for(auto it = range.first; it != range.second; ++it) {
+        cout << it->first << " " << it->second << "\n";
+    }
+
+    cout << "Contains C++20: " << m.contains('a') << "\n";
+
+    auto pair = m.find('a');
+    cout << pair->first << " " << pair->second << "\n";
+    
+    auto ub_range = m.upper_bound('x'); // give next element
+    cout << ub_range->first << " " << ub_range->second << "\n";
+}
+
+
+/*
+            set     unordered_set   unorered_multiset
+unique      T           T               F
+sorted      T           F               F
+
+Then why unordered multiset
+maintain a collection of non-unique items with fast insertion and removel
+It uses hashing with bucket
+This allows fast access to inividual elements, boc adfter computing the hash of 
+the value it refers to the exact bucket the elements is placed into
+    find, count
+
+            MULTISET        
+It is an associative container that contains a sorted set of duplicate objects of Key
+Usually Read Black Tree
+Insertion, Removal, Search have logirathmic complexity
+*/
+class Person {
+public:
+    float age;
+    string name;
+
+    bool operator < (const Person& rhs) const { return age < rhs.age; }
+    bool operator > (const Person& rhs) const { return age > rhs.age; }
+};
+void T_multiset() {
+    std::multiset<Person, std::greater<>> mS = { {25, "Ajanthan"}, {30, "Tharma"}, {30, "Kala"}};
+
+    for (const auto& e : mS) {
+        cout << e.age << " " << e.name << "\n";
+    }
+}
+
+
+struct Person2 {
+    float age;
+    string name;
+};
+
+struct PersonComparator2 {
+    bool operator()(const Person2& lhs, const Person2& rhs) const {
+        if (lhs.age != rhs.age)
+            return lhs.age > rhs.age; // for descending age
+        return lhs.name < rhs.name;   // ascending name when age is equal
+    }
+};
+
+void T_multiset2() {
+    multiset<Person2, PersonComparator2> mS = {
+        {25, "Ajanthan"},
+        {30, "Tharma"},
+        {30, "Kala"}
+    };
+
+    for (auto& p : mS) {
+        cout << p.age << " " << p.name << "\n";
+    }
+}
 int main() {
 
-    test();
-    test_tie();
+    // test();
+    // test_tie();
 
-    List();
+    // List();
+
+    MULTI_MAP();
+    T_multiset();
+    T_multiset2();
     return 0;
 }

@@ -102,7 +102,12 @@
         "climits": "cpp",
         "stdint.h": "c",
         "filesystem": "cpp",
-        "unistd.h": "c"
+        "unistd.h": "c",
+        "__hash_table": "cpp",
+        "expected": "cpp",
+        "spanstream": "cpp",
+        "stacktrace": "cpp",
+        "stdfloat": "cpp"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

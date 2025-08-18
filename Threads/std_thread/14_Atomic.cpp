@@ -557,7 +557,7 @@ If T is too large or misaligned, the compiler will use internal locking
 | `B_`   | 16 bytes         | ⚠️ Maybe lock-free (on x86-64 with CMPXCHG16B) |
 | `C_`   | 24 bytes         | ❌ Usually not lock-free (too big)             |*/
 
-    if constexpr (std::atomic<D>::is_always_lock_free()) {
+    if constexpr (std::atomic<D>::is_always_lock_free) {
         std::cout << "D is always lock-free\n";
     } else {
         std::cout << "D may not be lock-free\n";
@@ -591,6 +591,7 @@ This makes it not lock-free.
 }
 
 // Atomic queue:
+constexpr int N = 5;
 int q[N];
 std::atomic<size_t> front;  //  Atomic variable is an index to (non-atomic) memory
 void push(int x) {
@@ -831,7 +832,78 @@ void Spin_Wait() {
     t.join();
 }
 
+/*
+All attomic operations
+    1.  Nither COPY ASSIGNABLE nor COPY CONSTRUCTABLE
+    2. Can assign non atomic booleans and can be constructed using non atomic booleans
+*/
+void atomicBool() {
+    std::atomic<bool> flag_1;
+    cout << "Flag1: " << flag_1 << "\n";
 
+    // std::atomic<bool> flag_2(flag_1);
+    // std::atomic<bool> flag_3 = flag_1;
+
+    // Construct using non atomic boolean value
+    bool non_atomic_bool = true;
+    std::atomic<bool> flag_4(non_atomic_bool);
+    cout << "Flag4: " << flag_4 << "\n";
+
+    std::atomic<bool> flag_5 = non_atomic_bool;
+    cout << "Flag5: " << flag_5 << "\n";
+}
+
+
+/*  You’re using std::atomic<TaggedPtr> where TaggedPtr is 16 bytes (128 bits).
+
+On most x86_64 systems, hardware only supports lock-free atomics up to 8 bytes.
+
+When the compiler sees a request for 16-byte atomic operations, it emits calls to GCC’s libatomic helpers (like __atomic_store_16, __atomic_load_16).
+
+If libatomic is not linked, you get undefined reference at link time.
+
+If TaggedPtr can be made ≤ 8 bytes, hardware can usually handle it lock-free without libatomic.
+
+Example:
+
+cpp
+Copy
+Edit
+struct TaggedPtr {
+    void* ptr;
+    uint32_t tag;
+    // This will usually be 12 bytes + padding → try packing
+} __attribute__((packed));
+3️⃣ Use a mutex for large atomics
+If 128-bit lock-free operations aren’t essential:
+
+cpp
+Copy
+Edit
+#include <mutex>
+
+struct SafeTaggedPtr {
+    TaggedPtr value;
+    std::mutex m;
+    void store(TaggedPtr v) {
+        std::lock_guard lg(m);
+        value = v;
+    }
+    TaggedPtr load() {
+        std::lock_guard lg(m);
+        return value;
+    }
+};
+🔍 Why __atomic_store_16 exists
+It’s part of GCC’s __atomic builtins for 16-byte atomic operations, used when:
+
+Target CPU supports it (like some ARMv8, POWER, or x86 with CMPXCHG16B)
+
+Or GCC emulates it via libatomic
+
+If your CPU lacks native 128-bit atomics but you want them, GCC falls back to library calls.
+
+*/
 // is_always_log_free
 // Would you like help writing a custom atomic multiply using CAS (compare_exchange)?
 // Would you like to see a std::atomic<bool> version of the spinlock or a scoped version with RAII?
@@ -842,5 +914,7 @@ int main() {
     Other();
 
     is_LogFree();
+
+    atomicBool();
     return 0;
 }

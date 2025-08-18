@@ -145,3 +145,9 @@ Framework code (well-documented usage)
 But for most business logic or testable components — avoid it.
 
 https://www.youtube.com/watch?v=K5c7uvWe_hw*/
+
+/* Mayers Singleton which avoid certain issues with global objects, namely
+the static initialization order fiasco
+c++11 guarantees the initialization happens in a thread safe manner the first time 
+the function is called
+*/

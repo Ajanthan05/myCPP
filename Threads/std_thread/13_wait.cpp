@@ -65,8 +65,41 @@ void fun3() {
 //     }
 // };
 
+std::mutex mu;
+std::condition_variable cond;
+deque<int> buffer;
+const unsigned int maxBufferSize = 50;
+
+void producer(int val) {
+    while (val) {
+        std::unique_lock<std::mutex> locker(mu);
+        cond.wait(locker, []() { return buffer.size() < maxBufferSize; });
+        buffer.push_back(val);
+        cout << "Produced: " << val << "\n";
+        val--;
+        locker.unlock();
+        cond.notify_one();
+    }
+}
+
+void consumer() {
+    while (true) {
+        std::unique_lock<std::mutex> lock(mu);
+        cond.wait(lock, []() { return buffer.size() > 0; });
+        int val = buffer.front();
+        buffer.pop_front();
+        cout << "Consumed: " << val << "\n";
+        lock.unlock();
+        cond.notify_one();
+    }
+}
 int main() {
 
+    std::thread p(producer, 100);
+    std::thread c(consumer);
+
+    p.join();
+    c.join();
 
     return 0;
 }
