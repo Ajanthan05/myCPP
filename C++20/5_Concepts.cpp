@@ -8,6 +8,9 @@
 #include <type_traits>
 #include <ranges>
 #include <cassert>
+#include <cstring>
+#include <memory_resource>
+#include <cstdint>
 
 /*  Concepts are named, compile-time predicates that express constraints on template 
 parameters.
@@ -507,6 +510,10 @@ template<class T>           struct add_lvalue_reference : ALR_impl<T, void> {};
 template<class T>           struct add_rvalue_reference : ARR_impl<T, void> {};
 template<class T>           struct add_pointer : AP_impl<T, void> {};
 
+template <class T> 
+using add_lvalue_reference_t = typename add_lvalue_reference<T>::type;
+template <class T> 
+using add_rvalue_reference_t = typename add_rvalue_reference<T>::type;
 
 
 // 
@@ -555,12 +562,352 @@ template<class T>
 auto declval() noexcept -> add_rvalue_reference_t<T>;
 
 template<class T, class U>
-using assignment_
+using assignment_result_t = decltype( declval<T>() = declval<U>() );
+
+static_assert( is_same_v< assignment_result_t<int&, double>, int& >);
+// static_assert( is_same_v< assignment_result_t<int&, int*>, ill-formed >);
+/*  int& = double → allowed, because you can assign a double to an int reference.
+The expression type is int& (since assignment returns the left-hand side by reference).
+Therefore, assignment_result_t<int&, double> = int&.
+
+int& = double → allowed, because you can assign a double to an int reference.
+
+The expression type is int& (since assignment returns the left-hand side by reference).
+
+Therefore, assignment_result_t<int&, double> = int&.*/
+
+// “Expression SFINAE”
+/*  SFINAE:- If a substitution inside a template parameter list fails, it doesn’t 
+trigger a hard error — it’s just ignored (Substitution Failure Is Not An Error).*/
+
+// Primary template: assume it's false
+template<class T, class U, class Enable>
+struct is_assignable_impl : false_type {};
+// Enable is just a placeholder for SFINAE.
+
+// Specialization: enabled only if "declval<T>() = declval<U>()" is valid
+template<class T, class U>
+struct is_assignable_impl<T, U, 
+    decltype(void( declval<T>() = declval<U>() ))> : true_type {};
+/*  decltype(expr) normally yields the type of an expression.
+Here we wrap it in void(...) so it always becomes void if it compiles.
+If declval<T>() = declval<U>() is a valid expression → this specialization is chosen → derives from true_type.
+If not → substitution fails → compiler falls back to the primary (false_type).*/
+
+// Final user-facing trait
+template<class T, class U>
+struct is_assignable : is_assignable_impl<T, U, void> {};
+
+// Passes void as the Enable argument, so the specialization is attempted.
+// Result: true_type if T can be assigned from U, otherwise false_type.
+static_assert(is_assignable<int&, int>::value, "ok");   // ✅ true
+static_assert(!is_assignable<int, int>::value, "fail"); // ❌ false, can't assign to prvalue int
+static_assert(is_assignable<std::string&, const char*>::value, "ok"); // ✅
+
+
+
+
+template<class T, class U, class>
+struct ISC_impl : false_type {};
+// This is the fallback case: if substitution (SFINAE) fails, we end up here.
+// By default, assume "T is NOT static_castable to U".
+
+template<class T, class U>
+struct ISC_impl<T, U, decltype(void(
+    static_cast<U>(declval<T>())
+))> : true_type {};
+template<class T, class U>
+struct is_static_castable : ISC_impl<T, U, void> {};
+
+void T_is_static_castable() {
+    std::cout << std::boolalpha;
+    
+    // int → double is valid
+    std::cout << is_static_castable<int, double>::value << "\n";  // true
+    
+    // double* → int* is invalid (not allowed by static_cast)
+    std::cout << is_static_castable<double*, int*>::value << "\n";  // false
+    
+    // void* → int* is valid with static_cast
+    std::cout << is_static_castable<void*, int*>::value << "\n";  // true
+}
+
+template<class T, class> struct IP_impl : false_type {};
+template<class T> struct IP_impl<T, decltype(
+ dynamic_cast<void*>(declval< std::remove_cv_t<T>*>())
+)> : true_type {};
+template<class T>
+struct is_polymorphic : IP_impl<T, void*> {};
+/*  remove_cv_t<T>* removes const/volatile, then makes a pointer.
+
+declval<...>() gives you an rvalue of that type without constructing it.
+
+dynamic_cast<void*>(ptr) is only valid if T is polymorphic (i.e., has at least one virtual function).
+
+If T is not polymorphic, dynamic_cast to void* is ill-formed, so substitution fails → SFINAE → specialization is discarded.
+
+If T is polymorphic, the dynamic_cast is valid, decltype(...) works, and we pick this specialization.
+
+So this branch makes IP_impl<T, something> inherit from true_type.*/
+struct P {};                // no virtual → not polymorphic
+struct Q { virtual ~Q(); }; // has virtual → polymorphic
+static_assert(!is_polymorphic<P>::value);
+static_assert(is_polymorphic<Q>::value);
+
+// ----->>>>>>>> Because dynamic_cast to void* is only legal for polymorphic types.
+
+
+// -----------------------------------------------------------------------------
+
+template<bool B, class T = void>
+struct enable_if {}; // empty if condition is false
+
+template<class T>
+struct enable_if<true, T> { using type = T; };
+
+template<bool B, typename T = void>
+using enable_if_t = enable_if<B, T>::type;
+// If B == true → enable_if<true, T>::type is T.
+// If B == false → enable_if<false, T>::type is not defined (ill-formed), so the compiler removes that overload from consideration.
+
+template<typename T>
+enable_if_t<std::is_integral_v<T>, void> foo(T) {
+    std::cout << "Integral type\n";
+}
+
+template<typename T>
+enable_if_t<std::is_floating_point_v<T>, void> foo(T) {
+    std::cout << "Floating point type\n";
+}
+
+
+void T_enable_if_t() {
+    foo(5);    // Integral type
+    foo(3.14); // Floating point type
+}
+
+
+// Step 1: Convert expression to boolean trait
+template <typename, typename = void>
+struct has_push_back : false_type {};
+
+template <typename T>
+struct has_push_back<T, decltype(void(declval<T>().push_back(0)))> : true_type {};
+
+// Step 2: Use boolean trait in enable_if
+template <typename T>
+enable_if_t<has_push_back<T>::value>
+bar(T& t) {
+    t.push_back(42); // only compiles if push_back exists
+}
+
+
+
+template<typename T>
+void copy(T* dst, const T* src, size_t n, std::true_type /* trivially copyable */) {
+    std::memcpy(dst, src, n * sizeof(T));
+    std::cout << "Used memcpy\n";
+}
+
+template<typename T>
+void copy(T* dst, const T* src, size_t n, std::false_type /* not trivially copyable */) {
+    for (size_t i = 0; i < n; i++) dst[i] = src[i];
+    std::cout << "Used element copy\n";
+}
+
+template<typename T>
+void copy(T* dst, const T* src, size_t n) {
+    copy(dst, src, n, std::is_trivially_copyable<T>{});
+}
+
+struct Complex {
+    Complex() {}
+    Complex(const Complex&) { std::cout << "copy ctor\n"; }
+};
+
+void Optimizing_code_paths() {
+    int a[3] = {1,2,3}, b[3];
+    copy(b, a, 3); // ✅ memcpy
+
+    Complex c[3], d[3];
+    copy(d, c, 3); // ✅ element copy
+}
+
+
+
+// ----------------------REAL WORL   HAS_SIZE-----------------------------
+template<typename T, typename = void>
+struct has_size : false_type {};
+
+template<typename T>
+struct has_size<T, void_t<decltype(declval<T>().size())>> : true_type {};
+
+// using creates a type alias, but has_size<T>::value is a bool, not a type.
+// That’s why the compiler complained about “expected a constant of type bool”.
+template<typename T>
+inline constexpr bool has_size_v = has_size<T>::value;
+
+
+template<typename T>
+enable_if_t<has_size_v<T>, int> 
+print_size(const T& t) {
+    std::cout << "Size: " << t.size() << "\n";
+    return static_cast<int>(t.size());
+}
+template<typename T>
+enable_if_t<!has_size_v<T>, int> 
+print_size(const T& ) {
+    std::cout << "No Size available\n";
+    return -1;  // return sentinel value
+}
+// Detecting member functions (duck typing in C++)
+void Duck_typing() {
+    std::vector<int> v{1,2,3};
+     int s1 = print_size(v); // ✅ calls version with .size()
+
+    int x = 42;
+    int s2 = print_size(x); // ✅ calls fallback
+    
+    std::cout << "Returned values: " << s1 << ", " << s2 << "\n";
+}
+
+
+
+// --------------------------------------------------------
+void Memory_Resource() {
+    std::byte stackBuf[2048];
+    std::pmr::monotonic_buffer_resource rsrc(stackBuf, sizeof stackBuf);
+    std::pmr::vector<int> v{{1,2,3,4,5,6}, &rsrc};
+}
+
+// template<class VoidPtr>
+// class fancy_memory_resource;
+
+// template<class T, class VoidPtr>
+// class fancy_poly_allocator;
+
+// using memory_resource = fancy_memory_resource<void*>;
+// template<class T>
+// using polymorphic_allocator = fancy_poly_allocator<T, void*>;
+
+
+// template<class T>
+// using shmem_ptr = boost::interprocess::offset_ptr<T>;
+
+// using shmem_resource = fancy_memory_resource<shmem_ptr<void>>;
+// template<class T>
+// using shmem_allocator = fancy_poly_allocator<T, shmem_ptr<void>>;
+
+
+
+// boost::interprocess::managed_shared_memory shm(
+//     boost::interprocess::open_or_create, "MySegment", 65536);
+
+// using Alloc = shmem_allocator<int>;
+// auto* vec = shm.construct<std::vector<int>>("SharedVector")(Alloc{shm.get_segment_manager()});
+
+// vec->push_back(42); // stored in shared memory
+
+
+
+// template<class T, class VoidPtr>
+// class fancy_poly_allocator {
+//     fancy_memory_resource<VoidPtr> *mr_;
+// public:
+//     // Only participates when VoidPtr == void*
+//     template<class U = VoidPtr,
+//              class = enable_if_t<is_same_v<U, void*>>>
+//     fancy_poly_allocator() : mr_(get_default_resource()) {}
+// };
+
+
+// template<class U, bool_if_t<is_convertible_v<U*, T*>> = true>
+// offset_ptr(const offset_ptr<U>& rhs) : offset_ptr(rhs.ptr()) {}
+
+// template<class U, bool_if_t<is_static_castable_v<U*, T*> && !is_convertible_v<U*, T*>> = true>
+// explicit offset_ptr(const offset_ptr<U>& rhs) : offset_ptr(static_cast<T *>(rhs.ptr())) {}
+
+// The subtlety here is that the type-expression bool_if_t<expr> can't be evaluated until
+// we know the value of expr, which in this case depends on the p.o.u. because it depends
+// on U. At the p.o.u. the compiler will compute the overload set, which means evaluating
+// bool_if_t<expr>; and if expr is false then SFINAE will kick in and that template will
+// never be included in the overload set.
+
+
+
+// small helper alias used for SFINAE
+template<bool B>
+using bool_if_t = std::enable_if_t<B, bool>;
+
+// is_static_castable trait (expression-SFINAE)
+// template<class From, class To, class = void>
+// struct is_static_castable : std::false_type {};
+
+// template<class From, class To>
+// struct is_static_castable<From, To,
+//     std::void_t<decltype(static_cast<To>(std::declval<From>()))>> : std::true_type {};
+
+template<class From, class To>
+inline constexpr bool is_static_castable_v = is_static_castable<From, To>::value;
+
+
+// Simple offset_ptr (toy demonstration)
+template<class T>
+class offset_ptr {
+    std::uintptr_t m_ptr;
+public:
+    // pointer-from-address ctor
+    explicit offset_ptr(T* p) {
+        m_ptr = reinterpret_cast<std::uintptr_t>(p) - reinterpret_cast<std::uintptr_t>(this);
+    }
+
+    // retrieve raw pointer
+    T* ptr() const noexcept {
+        return reinterpret_cast<T*>(reinterpret_cast<std::uintptr_t>(this) + m_ptr);
+    }
+
+    // 1) implicit converting ctor: allowed when U* -> T* is implicitly convertible
+    template<class U, class = std::enable_if_t<std::is_convertible_v<U*, T*>>>
+    offset_ptr(const offset_ptr<U>& rhs) : offset_ptr(rhs.ptr()) {}
+
+    // 2) explicit converting ctor: allowed when U* is static_castable to T* but NOT implicitly convertible
+    template<class U,
+             class = std::enable_if_t<!std::is_convertible_v<U*, T*> &&
+                                      is_static_castable_v<U*, T*>>>
+    explicit offset_ptr(const offset_ptr<U>& rhs) : offset_ptr(static_cast<T*>(rhs.ptr())) {}
+};
+
+
+// Test types
+struct Base { virtual ~Base() = default; };
+struct Derived : Base { };
+
+void T2() {
+    Derived d;
+    offset_ptr<Derived> opd(&d);
+
+    // implicit convert Derived* -> Base*
+    offset_ptr<Base> opb = opd; // uses implicit constructor
+    std::cout << "implicit ok\n";
+
+    // reverse conversion requires explicit
+    // offset_ptr<Derived> opd2 = opb; // <-- would be ill-formed (explicit ctor)
+    offset_ptr<Derived> opd2(static_cast<offset_ptr<Derived>>(opb)); // explicit conversion
+    std::cout << "explicit ok\n";
+}
 
 
 int main() {
-    T();
-    T_integral_constant();
-    Test_is_convertable_v();
-    T_decltype();
+    // T();
+    // T_integral_constant();
+    // Test_is_convertable_v();
+    // T_decltype();
+
+    T_is_static_castable();
+    T_enable_if_t();
+
+    Optimizing_code_paths();
+    Duck_typing();
+
+    T2();
 }

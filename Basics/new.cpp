@@ -31,6 +31,14 @@ class Child;
 // };
 
 std::mutex m1;
+int val = 0;
+
+void Thread() {
+    m1.lock();
+    val++;
+    m1.unlock();
+
+}
 
 void add(int &i, int &j) { a+b;}
 

@@ -92,6 +92,9 @@ void Static_Polymorphism() {
     Square s;
     c.draw();
     s.draw();
+    // Cannot compile since the "Self" type cannot be deduced to be the dynamic type
+    // Shape sh;
+    // sh.draw();
     print(c);
 }
 
@@ -120,6 +123,41 @@ void Test() {
 
 // Hybrid CRTP + Virtual
 // Runtime interface (abstract base class)
+/*  🔹 Idea
+    Define a runtime interface (abstract base class with virtual functions).
+    Provide a CRTP adapter that implements the virtual functions by forwarding them to the derived class (via static polymorphism).
+
+That way:
+    At runtime, you can store different objects (Circle, Square, …) behind a common Shape*.
+    Inside, the CRTP still avoids code duplication and allows compile-time optimization.
+
+🔹 What’s Happening
+
+shape is an IShape* → lets you decide at runtime which shape to use.
+
+But Shape<Derived> uses CRTP → the virtual call forwards to Derived::drawImpl().
+
+So you get:
+
+Runtime flexibility (choose Circle or Square dynamically).
+
+Compile-time performance benefits (no code duplication in each derived).
+
+🔹 Where This is Used
+
+Game engines: common base interface for components, but CRTP for optimization.
+
+UI frameworks: runtime widgets, but static mixins for logging/tracing.
+
+Scientific libraries (Eigen): runtime polymorphic API wrappers + CRTP for actual math kernels.
+
+✅ Summary:
+
+Pure virtual → runtime flexibility, slower.
+
+Pure CRTP → compile-time only, very fast.
+
+Hybrid → combines both: runtime choice + compile-time optimizations.*/
 class IShape {
 public:
     virtual void draw() = 0;
@@ -163,24 +201,31 @@ void Hybrid_CRTP_Virtual() {
 
 // Adding Functionality with CRTP
 template< typename Derived >
-struct NumericalFunctions
-{
- void scale( double multiplicator )
- {
- Derived& underlying = static_cast<Derived&>(*this);
- underlying.setValue( underlying.getValue() * multiplicator );
- }
+struct NumericalFunctions {
+    void scale( double multiplicator ) {
+        Derived& underlying = static_cast<Derived&>(*this);
+        underlying.setValue( underlying.getValue() * multiplicator );
+    }
 };
-struct Sensitivity : public NumericalFunctions<Sensitivity>
-{
- double getValue() const { return value; }
- void setValue( double v ) { value = v; }
- double value;
+
+// C++23 No template parameter needed
+// struct NumericalFunctions {
+//     void scale( this auto&& self, double multiplicator ) { Explicit object parameter (aka "Deducing This")
+//          self.setValue( self.getValue() * multiplicator )
+//     }
+// };
+struct Sensitivity : public NumericalFunctions<Sensitivity> {
+    Sensitivity(double v) : value(v) {}   // constructor
+
+    double getValue() const { return value; }
+    void setValue( double v ) { value = v; }
+    double value;
 };
 void T23() {
- Sensitivity s{ 1.2 };
- s.scale( 2.0 );
-//  std::println( std::cout, "s.getValue() = {}", s.getValue() );
+    Sensitivity s{ 1.2 };
+    s.scale( 2.0 );
+    std::cout << "s.getValue() = " << s.getValue() << "\n";
+    //  std::println( std::cout, "s.getValue() = {}", s.getValue() );
 }
 int main() {
     Static_Polymorphism();

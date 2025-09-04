@@ -762,9 +762,43 @@ void T_Static() {
 
 }
 
+
+
+struct Foo {
+    int x;
+    Foo(int v) : x(v) {}
+};
+void VecPointer() {
+    std::vector<std::unique_ptr<Foo>> v;
+
+    v.push_back(std::make_unique<Foo>(1));
+    v.push_back(std::make_unique<Foo>(2));
+
+    for (auto& p : v)
+        std::cout << p->x << "\n";
+    // cleanup automatic!
+
+    // std::vector<std::unique_ptr<Foo>> copy = v;
+}
+
 /* Why lamda function
 where
 */
+
+struct MyHash {
+    int x;
+    int y;
+};
+
+namespace std {
+    template<>
+    struct haxh<MyHash> {
+        std::size_t operator()(const MyHash& obj)  const {
+            return std::hash<int>()(obj.x) ^ std::hash<int>() (obj.y);
+        }
+    };
+}
+
 int main() {
     // This();
     // size_t a = 15;
@@ -778,5 +812,7 @@ int main() {
     SET();
 
     T_Static();
+
+    VecPointer();
     return 0;
 }

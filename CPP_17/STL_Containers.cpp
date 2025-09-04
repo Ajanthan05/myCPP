@@ -335,6 +335,11 @@ void T_multiset2() {
         cout << p.age << " " << p.name << "\n";
     }
 }
+
+/*  LIST:
+ASSIGN, FRONT, BACK, empty, size, max_size, clear, insert, emplace, push_back
+pop_back, push_front, pop_front, reverse, merge, split, unique, remove remove_if, resize
+*/
 int main() {
 
     // test();

@@ -134,9 +134,9 @@ public:
 
 
 
-struct MyClass {
-    MyClass(int a, std::string b) : x(a), y(b) {
-        std::cout << "MyClass constructed with: " << x << ", " << y << std::endl;
+struct MyClasS {
+    MyClasS(int a, std::string b) : x(a), y(b) {
+        std::cout << "MyClasS constructed with: " << x << ", " << y << std::endl;
     }
 
     int x;
@@ -166,8 +166,8 @@ an existing shared_ptr, not from the raw pointer
 */
 
 void T() {
-    // Create a unique_ptr to MyClass using make_unique
-    auto ptr = make_unique<MyClass>(10, "Hello");
+    // Create a unique_ptr to MyClasS using make_unique
+    auto ptr = make_unique<MyClasS>(10, "Hello");
 
     std::cout << "x = " << ptr->x << ", y = " << ptr->y << std::endl;
 }
@@ -352,20 +352,20 @@ void Test_shared_from_this() {
     std::cout << "Exiting scope...\n";
 }
 
-struct Widget : std::enable_shared_from_this<Widget> {
+struct Widget2 : std::enable_shared_from_this<Widget2> {
     std::string name;
-    std::vector<std::shared_ptr<Widget>> children;
-    std::weak_ptr<Widget> parent;  // ✅ weak_ptr breaks cycle
+    std::vector<std::shared_ptr<Widget2>> children;
+    std::weak_ptr<Widget2> parent;  // ✅ weak_ptr breaks cycle
 
-    Widget(const std::string& n) : name(n) {
-        std::cout << "Widget " << name << " created\n";
+    Widget2(const std::string& n) : name(n) {
+        std::cout << "Widget2 " << name << " created\n";
     }
 
-    ~Widget() {
-        std::cout << "Widget " << name << " destroyed\n";
+    ~Widget2() {
+        std::cout << "Widget2 " << name << " destroyed\n";
     }
 
-    void addChild(const std::shared_ptr<Widget>& child) {
+    void addChild(const std::shared_ptr<Widget2>& child) {
         children.push_back(child);
         child->parent = shared_from_this();
     }
@@ -445,11 +445,142 @@ rather than:
 
 
 
+/*  if you are inside the object itself and want to hand out a shared_ptr to 
+yourself, how do you do it?
+struct MyClass {
+    std::shared_ptr<MyClass> getPtr() {
+        return std::shared_ptr<MyClass>(this); // ❌ BAD
+    }
+};
+This creates a new shared_ptr with its own reference count, separate from the original shared_ptr.
+➡️ Result: double-delete when both go out of scope (undefined behavior).
+*/
+struct MyClass : enable_shared_from_this<MyClass> {
+    shared_ptr<MyClass> getPtr() {
+        return shared_from_this(); // safe
+    }
+    ~MyClass() { cout << "Destroyed\n"; }
+};
+void SharedFromThis() {
+    auto p1 = make_shared<MyClass>();
+    auto p2 = p1->getPtr(); // another shared_ptr pointing to same object
+
+    cout << "use_count = " << p1.use_count() << "\n"; // 2
+}
+struct NodE : std::enable_shared_from_this<NodE> {
+    std::string name;
+    std::weak_ptr<NodE> parent;
+    std::vector<std::shared_ptr<NodE>> children;
+
+    NodE(std::string n) : name(std::move(n)) {}
+    ~NodE() { std::cout << name << " destroyed\n"; }
+
+    void addChild(std::shared_ptr<NodE> child) {
+        child->parent = shared_from_this(); // ✅ works
+        children.push_back(child);
+    }
+
+    void showParent() {
+        if (auto p = parent.lock())
+            std::cout << name << " has parent: " << p->name << "\n";
+        else
+            std::cout << name << " has no parent\n";
+    }
+};
+
+int Family_Tree() {
+    auto root = std::make_shared<NodE>("Root");
+    auto child1 = std::make_shared<NodE>("Child1");
+    auto child2 = std::make_shared<NodE>("Child2");
+
+    root->addChild(child1);
+    root->addChild(child2);
+
+    child1->showParent();
+    child2->showParent();
+
+    return 0; // ✅ avoid warning
+}
+/*  How does it work?
+
+enable_shared_from_this<T> contains a hidden weak_ptr<T> inside your object.
+
+When you create the object with make_shared, that weak_ptr is initialized to point to the same control block.
+
+shared_from_this() simply calls weak_ptr.lock() and returns a new shared_ptr sharing ownership.*/
+
+
+/*  template<typename T>
+using Vec = std::vector<T>;
+
+Vec<int> v = {1, 2, 3};     // std::vector<int>
+Vec<double> w = {1.1, 2.2}; // std::vector<double>
+
+2. Using-declaration (import names into scope)
+
+This is about scope.
+It lets you pull in a name from another namespace or base class.
+
+Example (namespace scope):
+#include <iostream>
+using std::cout;
+using std::endl;
+
+
+Now you can use cout and endl without std::.
+
+⚠️ Compare with:
+
+using namespace std; // imports *everything* (dangerous in headers)
+
+
+So using std::cout; (specific) is safer.
+
+struct Base {
+    void show(int) {}
+};
+
+struct Derived : Base {
+    using Base::show; // bring Base::show into scope
+    void show(double) {}
+};
+Without using Base::show;, the int overload would be hidden by the double version.
+
+
+*/
+
+struct Container {
+    using VecInt = std::vector<int>;  // alias type
+    VecInt data;                      // actual member variable
+};
+void TUsing() {
+    Container it;
+    it.data = {1, 2, 3};  // assign values
+
+    // print
+    for (int x : it.data) {
+        cout << x << " ";
+    }
+    cout << "\n";
+
+    // Alternative: no data, just local If you just want to use the alias 
+    // inside a function
+    Container::VecInt v = {1, 9, 3};  // use alias
+
+    for (int x : v) {
+        cout << x << " ";
+    }
+    cout << "\n";
+}
+
+
 
 int main() {
     // WeakPtr();
-    Test_shared_from_this();
+    // Test_shared_from_this();
 
+    Family_Tree();
 
+    TUsing();
     return 0;
 }

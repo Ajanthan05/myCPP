@@ -447,17 +447,26 @@ Syntax: (... op pack)
 Associates from left to right
 No initial value
 Requires at least one element in the pack
-(... ((arg1 + arg2) + arg3)) left-to-right  */
+(... ((arg1 + arg2) + arg3)) left-to-right 
+
+(... ((arg1 + arg2) + arg3)) + arg4 
+
+leftFold(10, 2, 1);
+(10 - (2 - 1))   // = 9 */
 template <typename... Args>
 auto sum2(Args... args) {
     return (... + args);  // Left fold
 }
+// Right fold: (((a op b) op c) op d)
+// Left fold: (a op (b op (c op d)))
 
 /*  ✅ 3. Binary Right Fold (with initial value)
 Syntax: (pack op ... op init)
 Right-to-left association
 Uses initial value (safe with empty packs)
-(arg1 + (arg2 + (arg3 + 0)))*/
+(arg1 + (arg2 + (arg3 + 0)))
+
+sum3(1,2,3) → 1 + (2 + (3 + 0))*/
 template <typename... Args>
 auto sum3(Args... args) {
     return (args + ... + 0);  // Right fold with initial value
@@ -467,16 +476,17 @@ auto sum3(Args... args) {
 Syntax: (init op ... op pack)
 Left-to-right association
 Uses initial value
-(((0 + arg1) + arg2) + arg3)    */
+(((0 + arg1) + arg2) + arg3)    
+sum3(1,2,3) → (((0 + 1) + 2) + 3)   */
 template <typename... Args>
 auto sum4(Args... args) {
     return (0 + ... + args);  // Left fold with initial value
 }
 
 /*  🧠 When to Use Which?
-Fold Type	Use Case Example	Comment
-(pack op ...)	return (args && ...);	Logical AND from right
-(... op pack)	return (... + args);	Sum left to right
+Fold Type	            Use Case Example	        Comment
+(pack op ...)	        return (args && ...);	    Logical AND from right
+(... op pack)	        return  (... + args);	    Sum left to right
 (pack op ... op init)	return (args + ... + 0);	Handles empty packs safely
 (init op ... op pack)	return (1 * ... * args);	Multiplication with identity*/
 

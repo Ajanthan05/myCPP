@@ -1,0 +1,11 @@
+void *v;
+int *i;
+int ivar;
+char chvar;
+float fvar;
+v = &ivar;       
+v = &chvar; 
+v = &fvar;     
+i = &ivar;  
+i = &chvar;   
+i = &fvar;

@@ -19,3 +19,5 @@ void T() {
         }
     }
 }
+
+/*  Any thread can call wait and any thread can call post unlike mutex*/

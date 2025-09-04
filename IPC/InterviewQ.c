@@ -25,6 +25,7 @@ void Swap(Node *head, int ind) {
     Node *s1 = tmp->next;
     Node *s2 = tmp->next->next;
 
+    
     tmp->next = s2;
     s2->next = s1;
 }
@@ -43,9 +44,25 @@ void LL() {
         tmp->next = createNode(i);
         tmp = tmp->next;
     }
+    if (!tmp || tmp->next)
     PrintLL(head);
     // Swap(head, 4);
 
+}
+
+// Uninitialized pointers are known as wild pointers because they point to some arbitrary memory location and may cause a program to crash or behave unexpectedly.
+// C program that demonstrated wild pointers
+int WildPtr()
+{
+    /* wild pointer */
+    int* p;
+    /* Some unknown memory location is being corrupted.
+    This should never be done. */
+    *p = 12;
+
+    // If we want a pointer to a value (or set of values) without having a variable for the value, we should explicitly allocate memory and put the value in the allocated memory.
+    int *ptr = (int *)malloc(sizeof(int));
+    *ptr = 15;
 }
 
 int main() {

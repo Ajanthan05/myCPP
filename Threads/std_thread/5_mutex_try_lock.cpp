@@ -123,6 +123,9 @@ if (stm.try_lock_shared()) {
 
 */
 
+
+/**/
+
 int main() {
     std::thread t1(counter);
     std::thread t2(counter);

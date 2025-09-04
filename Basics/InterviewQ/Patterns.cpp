@@ -115,6 +115,60 @@ void Pattern4(int n) {
     }
 }
 
+/*
+1
+2 3
+4 5 6 
+7 8 9 10
+11 12 13 14 15
+*/
+void Pattern5(int n) {
+    int start = 1;
+    for(int i=1; i<=n; ++i) {
+        for(int j=1; j<=i; j++) {
+            cout << start++ << " ";
+        }
+        cout << "\n";
+    }
+}
+
+/*
+A
+AB
+ABC
+ABCD
+ABCDE
+*/
+
+void Pattern6(int n) {
+    for(int i=0; i<n; ++i) {
+        for(char ch = 'A'; ch <= 'A' + i; ch++) {
+            cout << ch;
+        }
+        cout << "\n";
+    }
+}
+
+
+void Pattern1(int n) {
+    for(int i=0; i<n; ++i) {
+        // Space
+        for(int j=0; j<n-i-1; ++j) {
+            cout << " ";
+        }
+        // Char
+        
+        for(int j=0; j<2*i+1; ++j) {
+            cout << "*";
+        }
+        // Space
+        for(int j=0; j<n-i-1; ++j) {
+            cout << " ";
+        }
+        cout << "\n";
+    }   
+}
+
 int main() {
     Pattern1(5);
     cout << "\n\n";
@@ -127,6 +181,12 @@ int main() {
 
     Pattern4(5);
 
+    cout << "\n\n";
+
+    Pattern5(5);
+    cout << "\n\n";
+
+    Pattern6(5);
 
     return 0;
 }

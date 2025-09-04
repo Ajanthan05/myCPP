@@ -23,7 +23,7 @@ int main() {
     if (pid == 0) {
         // Run it in child process
         execlp("ping", "ping", "-c", "3", "google.com", NULL);
-        // how to check the launched p
+        // Anything after wont get executed
     }
     else {
         wait(NULL);

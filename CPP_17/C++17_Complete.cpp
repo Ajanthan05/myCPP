@@ -168,6 +168,19 @@ void Variant() {
         cout << "String: " << *stringValue << "\n";
     }
     else cout << "NoValue\n";
+
+    std::varient<int, double, std::string, bool> v2;
+
+    v2 = 5.5;
+    auto x1 = std::get<double>(v2);
+
+    v2 = std::string("Hi");
+    auto x2 = std::get<2>(v2);
+    unt id - v2.index();
+
+    // std::holds_alternative<int> (v2);  return true or false 
+    // std::get_if<int>(&v2);  return pointer if not nullptr
+    // auto x2 = std::get<2>(v2); Will throw exception
 }
 
 //////////////////////////  Print varient  std::visit (callable, variant...) ///////////////////////////

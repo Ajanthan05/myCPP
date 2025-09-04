@@ -107,7 +107,10 @@
         "expected": "cpp",
         "spanstream": "cpp",
         "stacktrace": "cpp",
-        "stdfloat": "cpp"
+        "stdfloat": "cpp",
+        "ne": "cpp",
+        "__split_buffer": "cpp",
+        "locale": "cpp"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

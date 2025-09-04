@@ -624,6 +624,105 @@ int global_var = 42;   // definition
 }
 
     
+
+
+/*  A lambda expression is essentially an inline, unnamed function object 
+that you can define at the point of use.
+
+1. Short, Inline Functions
+Without lambdas, you’d often need to:
+Write a separate function
+Or define a functor class (struct with operator())
+
+2. Custom Logic in Standard Algorithms
+3. Capture Local Variables
+
+4. Used in Callbacks & Event Handling
+When working with threads, async tasks, or GUI event systems, lambdas let you pass 
+inline custom logic without polluting the codebase with one-off functions.
+
+5. Cleaner Resource Management
+
+In RAII or scope-guard patterns, lambdas are super handy.
+std::unique_ptr<FILE, decltype([](FILE* f){ if(f) fclose(f); })> file(fopen("test.txt", "r"));*/
+
+auto make_lambda() {
+    std::string local = "test";
+    return [varD = std::move(local)] { std::cout << varD; }; // OK, varD owns it
+
+    // BUT if you captured by reference accidentally:
+    // return [&local]() { std::cout << local; }; // ⚠️ dangling reference
+}
+
+// 4. Exceptions During Move
+// If the object’s move constructor throws, the lambda construction fails.
+struct X {
+    X() {}
+    X(X&&) { throw std::runtime_error("move failed"); }
+};
+
+// 5. Copy-only Types
+// If z is copyable but not movable, std::move(z) will try to use the move constructor → compile error:
+
+struct CopyOnly {
+    CopyOnly() {}
+    CopyOnly(const CopyOnly&) {}
+    CopyOnly(CopyOnly&&) = delete; // no move
+};
+
+void Errors() {
+    std::string z = "hello";
+    auto lam = [varD = std::move(z)] { std::cout << varD; };
+    std::cout << z;   // ⚠️ UB if you assume z still holds "hello"
+
+    // 2 Lifetime Issues
+    auto lam = make_lambda();
+    lam(); // ✅ safe, lambda owns copy
+
+    // 4
+    X z;
+    auto lam = [varD = std::move(z)] {}; // ⚠️ throws here
+
+    // 5
+    CopyOnly z;
+    auto lam = [varD = std::move(z)] {}; // ❌ compile error
+
+}
+
+/*  1. Normal reference capture
+[&y] { use(y); }
+Captures the variable y by reference.
+Inside the lambda, the name is still y.
+
+2. Init-capture with reference
+[&varC = y] { use(varC); }
+Captures y by reference.
+But gives it a new name inside the lambda: varC.
+
+🔹 Why [&varC = y] Exists?
+
+Rename variables in lambda scope
+Sometimes you want to avoid name shadowing or clarify usage:
+
+int y = 42;
+auto f = [&val = y]() { std::cout << val; }; // inside lambda it's 'val'
+
+2 Capture an expression, not just a bare variable
+[var = expr] (or [&var = expr]) lets you initialize from any expression:
+
+auto f = [&r = someVector[index]]() { r = 100; };
+Here you’re capturing a reference to an element in a container.
+You cannot write [&someVector[index]] — not allowed.
+So init-capture with &r = expr is the only way.
+*/
+
+/* Evaluating happen at when lambda expression define
+When we call lambda expression invoking happen*/
+
+
+// ---------------------------------  C++20
+/*  Inordered to support c++ concepts */
+
     // ?????????????? Lambdas in template context, constexpr + template parameters, default constructible lambdas
     // for STL algorithms, nested lambdas, or class-based scenarios!
 int main() {
