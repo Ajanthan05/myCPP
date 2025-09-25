@@ -19,6 +19,16 @@ promise:- Used to set values or exceptions.
 feature:- Used to get values from promis
           Ask promise of the value is availabel.
           wait for the promise.
+
+std::future<ull> OddFeature = OddSum.get_future();
+The consumer object — main thread waits on this to read the result.
+Without calling .get_future(), you’d have no way to read the promised value.
+
+Thread function findOdd(..., std::move(OddSum), ...)
+The promise is moved into the thread so that thread owns the writer.
+
+OddFeature.get();
+Blocks until the worker thread sets the value. Returns the computed odd sum.
 */
 
 int main() {

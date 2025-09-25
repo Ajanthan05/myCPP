@@ -4,7 +4,7 @@
 
 using namespace std;
 
-/*      std::optional?
+/*      std::optional
 std::optional<T> is a wrapper that may contain a value of type T, or may be empty (no value).
 It's a safer alternative to returning raw pointers, nullptr, or magic values (like -1) to indicate "nothing" or failure.*/
 

@@ -110,7 +110,25 @@
         "stdfloat": "cpp",
         "ne": "cpp",
         "__split_buffer": "cpp",
-        "locale": "cpp"
+        "locale": "cpp",
+        "hash_set": "cpp",
+        "strstream": "cpp",
+        "decimal": "cpp",
+        "buffer": "cpp",
+        "executor": "cpp",
+        "internet": "cpp",
+        "io_context": "cpp",
+        "netfwd": "cpp",
+        "propagate_const": "cpp",
+        "socket": "cpp",
+        "timer": "cpp",
+        "rope": "cpp",
+        "slist": "cpp",
+        "synchronized_value": "cpp",
+        "__functional_03": "cpp",
+        "__tree": "cpp",
+        "text_encoding": "cpp"
     },
-    "C_Cpp.errorSquiggles": "disabled"
+    "C_Cpp.errorSquiggles": "disabled",
+    "cmake.sourceDirectory": "/home/ajanthan/myCPP/IPC/1"
 }

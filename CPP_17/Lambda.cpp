@@ -559,7 +559,7 @@ __lambda_2(i, j);
 
 struct x {
     void printAsync() {
-        callAsync([this] { cout << i << "\n"; } );
+        // callAsync([this] { cout << i << "\n"; } );
     }
 private:
     int i=42;
@@ -620,7 +620,7 @@ int global_var = 42;   // definition
 
 */
 
-   return i;  // Return 6
+//    return i;  // Return 6
 }
 
     
@@ -676,17 +676,16 @@ void Errors() {
     std::cout << z;   // ⚠️ UB if you assume z still holds "hello"
 
     // 2 Lifetime Issues
-    auto lam = make_lambda();
-    lam(); // ✅ safe, lambda owns copy
+    auto lam2 = make_lambda();
+    lam2(); // ✅ safe, lambda owns copy
 
     // 4
-    X z;
-    auto lam = [varD = std::move(z)] {}; // ⚠️ throws here
+    X z1;
+    auto lam3 = [varD = std::move(z1)] {}; // ⚠️ throws here
 
     // 5
-    CopyOnly z;
-    auto lam = [varD = std::move(z)] {}; // ❌ compile error
-
+    CopyOnly z2;
+    // auto lam4 = [varD = std::move(z2)] {}; // ❌ compile error
 }
 
 /*  1. Normal reference capture
@@ -720,6 +719,148 @@ So init-capture with &r = expr is the only way.
 When we call lambda expression invoking happen*/
 
 
+void Mutable() {
+    // By default, lambdas that capture variables by value make those captures const:
+    int n = 0;
+    // auto lam = [n]() { n++; }; // ❌ error: n is const inside lambda
+
+    // mutable does nothing if you capture by reference:
+    // Because references always allow mutation anyway.
+    int n1 = 0;
+    auto lam = [&n1]() mutable { n1++; }; // same as without mutable
+    lam();
+    std::cout << n1 << "\n"; // 1
+
+    int n2 = 0;
+    auto lam2 = [n2]() mutable { n2++; return n2; };
+    std::cout << "n2: " << lam2() << "\n"; // 1
+    std::cout << "n2: " << lam2() << "\n"; // 2 (because lambda has its own copy)
+    std::cout << "n2: " << n2 << "\n";     // 0 (unchanged)
+
+    // Interplay with move-only types
+    // You can use mutable lambdas to mutate/capture move-only types:
+    auto ptr = std::make_unique<int>(10);
+    auto lam3 = [p = std::move(ptr)]() mutable {
+        *p = 20; // allowed
+    };
+    lam3();
+    // ptr is now empty, lambda owns it
+    // Without mutable, you couldn’t reassign *p.
+}
+
+class S {
+    inline static int x = 5;
+    int i = 3;
+    // std::string str{"Hello"};
+};
+void Size() {
+    S s;
+    cout << "Size S: " << sizeof(s) << "\n";
+}
+
+// 🔹 C++11 — [this]
+struct P {
+    int x = 5;
+    auto make_lam() {
+        return [this]() { return x; };
+    }
+};
+// What happens: captures the this pointer (by value).
+//     Inside the lambda, members are accessed via the captured pointer.
+//     ✅ Good:Works as expected if the object is still alive.
+
+// ⚠️ Edge Cases:
+// Dangling this
+// If the object is destroyed, the lambda holds a dangling pointer:
+void DanglingTHis() {
+    // auto lam;
+    // {
+    //     P s;
+    //     lam = s.make_lam(); // captures this
+    // } // s destroyed
+    // lam(); // ❌ UB: dangling this pointer
+}
+
+/*  🔹 C++14 — [self = *this]
+struct S {
+    int x = 42;
+    auto make_lambda() {
+        return [self = *this]() { return self.x; };
+    }
+};
+
+What happens: captures a copy of the object by value (self).
+No pointer involved — safer than [this].
+Inside the lambda, you work with the copied self.
+
+✅ Good:
+
+Object lifetime issue is avoided — lambda has its own copy.
+
+Safer for async / detached tasks.
+
+⚠️ Edge Cases:
+
+Copy cost
+Capturing *this copies the whole object. If your class is large, this is expensive.
+
+Stale data
+The lambda only sees the snapshot of *this at capture time, not later updates.
+
+S s;
+auto lam = s.make_lambda(); // copies s
+s.x = 99;
+std::cout << lam(); // prints old value (42), not 99  <====*********
+
+
+Copy constructor must exist
+If the object is non-copyable, [self = *this] won’t compile.*/
+
+/*  🔹 C++17 — [*this]
+struct S {
+    int x = 42;
+    auto make_lambda() {
+        return [*this]() { return x; };
+    }
+};
+
+What happens: captures *this (the whole object) by value, like C++14, but:
+
+No need to write self = *this
+
+Members can be accessed directly (x instead of self.x).
+
+✅ Good:
+
+Cleaner syntax.
+
+Avoids dangling this problems.
+
+Explicitly shows you’re capturing the object.
+
+⚠️ Edge Cases:
+
+Same stale copy issue as C++14 — modifications after capture are not visible.
+
+Copy constructor required — same restriction.
+
+Slicing risk if *this is a base subobject:*/
+struct Base { int b = 1; };
+struct Derived : Base { 
+    int d = 2; 
+    auto f() { return [*this] { return b + d; }; }
+};
+
+void lam17() {
+    Base base = Derived{};
+    // auto lam = base.f(); // ❌ only Base part copied, Derived part sliced
+    // So [*this] respects object slicing rules.
+
+// If your object is non-copyable but movable, in C++14/17 you can do:
+// [self = std::move(*this)] { ... }
+}
+
+
 // ---------------------------------  C++20
 /*  Inordered to support c++ concepts */
 
@@ -735,4 +876,11 @@ int main() {
 
     Sort();
     // Variadic();
+    cout << "\n\n";
+    Mutable();
+    Size();
+
+    DanglingTHis();
+
+    lam17();
 }

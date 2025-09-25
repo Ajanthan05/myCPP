@@ -57,8 +57,6 @@ int Test_main(int argc, char **argv)
 
     return 0;
 }
-// gcc 2_dpdk_per_lcore_test.c -o dpdk_test $(pkg-config --cflags --libs libdpdk)
-// sudo ./dpdk_test -l 0-3 -n 4
 
 /*  
 enum rte_lcore_role_t {
@@ -151,6 +149,5 @@ int main(int argc, char **argv)
 
     return 0;
 }
-// gcc dpdk_lcore_test.c -o dpdk_lcore_test $(pkg-config --cflags --libs libdpdk)
-
-
+// gcc 2_dpdk_per_lcore_test.c -o dpdk_test $(pkg-config --cflags --libs libdpdk)
+// sudo ./dpdk_test -l 0-3 -n 4

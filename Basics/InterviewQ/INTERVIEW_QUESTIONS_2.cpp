@@ -4,6 +4,7 @@
 #include <queue>
 #include <algorithm>
 #include <unordered_map>
+#include <unordered_set>
 
 #include <typeinfo> // for typeid
 #include <utility> // std::swap
@@ -14,6 +15,7 @@
 #include <memory>
 #include <list>
 #include <numeric> // iota
+#include <limits>
 
 using namespace std;
 
@@ -790,14 +792,240 @@ struct MyHash {
     int y;
 };
 
-namespace std {
-    template<>
-    struct haxh<MyHash> {
-        std::size_t operator()(const MyHash& obj)  const {
-            return std::hash<int>()(obj.x) ^ std::hash<int>() (obj.y);
-        }
-    };
+// namespace std {
+//     template<>
+//     struct haxh<MyHash> {
+//         std::size_t operator()(const MyHash& obj)  const {
+//             return std::hash<int>()(obj.x) ^ std::hash<int>() (obj.y);
+//         }
+//     };
+// }
+
+
+// int ReverseNum(int i) {
+//     int ans = 0;
+//     int sign = 1;
+//     if (i<0) {
+//         sign = -1;
+//         i *= (-1);
+//     }
+
+//     while(i) {
+//         int rem = i%10;
+//         ans = ans*10 + rem;
+//         i /= 10;
+//     }
+
+//     return sign*ans;
+// }
+
+double ReverseNum(double num) {
+    // Handle sign
+    int sign = (num < 0) ? -1 : 1;
+    num = std::abs(num);
+
+    // Remove trailing zeros and possible trailing dot
+    std::string s = std::to_string(num);
+    s.erase(s.find_last_not_of('0') + 1, std::string::npos);
+    if(s.back() == '.') s.pop_back();
+/*  s.find_last_not_of('0')
+
+Finds the last character in s that is NOT '0'.
+
+In "123.45000", the last non-zero character is '5' at index 5.
+
+So this returns 5.
+
++ 1
+
+Moves one position to the right (to index 6).
+
+That’s the position of the first '0' after the last non-zero digit.
+
+s.erase(6, std::string::npos)
+
+Erases everything from index 6 until the end of the string.
+
+std::string::npos just means “go until the end”.
+
+So it erases "000", leaving "123.45".*/
+
+    // Reverse digits ignoring the decimal point
+    std::string rev;
+    for(char c : s) {
+        if (c != '.')
+            rev.push_back(c);
+    }
+    std::reverse(rev.begin(), rev.end());
+
+    // Put decimal point back at the right place
+    size_t dotPos = s.find('.');
+    if (dotPos != std::string::npos) {
+        size_t digits_after_dot = s.size() - dotPos - 1;
+        rev.insert(rev.begin() + digits_after_dot, '.');
+    }
+    return sign * std::stod(rev);
+
+
+    /*  std::string::npos?
+It is a constant defined as the maximum possible value of size_t:
+static const size_t npos = -1;
+So for a 64-bit system, it’s 18446744073709551615.
+
+size_t dot_pos = s.find('.');
+If '.' exists in the string, dot_pos will be the index (position) of the first '.'.
+Example: "123.456" → dot_pos = 3.
+If '.' does not exist, then find() returns std::string::npos.*/
 }
+void T_ReverseNum() {
+    std::cout << ReverseNum(123.456) << "\n";   // 654.321
+    std::cout << ReverseNum(-10.25)   << "\n";  // -52.01
+}
+
+/*  The function std::numeric_limits<T>::digits does not accept any parameter. 
+Return Value: The function std::numeric_limits<T>::digits returns the number of 
+radix digits that the type can represent without loss of precision. Below is the 
+program to demonstrate std::numeric_limits<T>::digits in C++: Program*/
+void NumericLimits() {
+    cout << "For int: "
+         << numeric_limits<int>::digits
+         << endl;
+
+    cout << "For float: "
+         << numeric_limits<float>::digits
+         << endl;
+
+    cout << "For double: "
+         << numeric_limits<double>::digits
+         << endl;
+
+    cout << "For long double: "
+         << numeric_limits<long double>::digits
+         << endl;
+}
+
+
+struct Outer {
+    int id;
+
+    struct Inner {
+        int x;
+        int y;
+    };
+};
+void T_inner() {
+    Outer::Inner p;   // standalone object of type Outer::Inner
+    p.x = 10;
+    p.y = 20;
+    // This is not tied to any specific Outer instance.
+    // It’s just a regular object of type Outer::Inner.
+}
+/*  Summary
+
+✅ Standalone inner object = using Outer::Inner outside Outer.
+✅ Needed when:
+
+You want reusability of inner type.
+
+You want hierarchical naming (self-documenting).
+
+You want to avoid name clashes.
+
+You want to organize related concepts but still use them independently.
+
+It’s very common in the STL (std::vector::iterator, std::map::value_type, etc.) and in real-world design (geometry, networking, configs).*/
+struct Person {
+    std::string name;
+    int age;
+
+    struct Address {
+        std::string city;
+        std::string street;
+        int zipcode;
+    };
+
+    Address addr;
+};
+
+void T_inner2() {
+    Person p{"Alice", 30, {"New York", "5th Avenue", 12345}};
+    std::cout << p.name << " lives in " << p.addr.city << "\n";
+}
+
+void T_Unordered_set() {
+    unordered_set<int> us = {1, 2, 3, 4, 5};
+    
+    // Using iterator in loop
+    for(auto it = us.begin(); it != us.end(); it++)
+        cout << *it << " ";
+
+    us.erase(5);
+    us.erase(us.begin());
+
+/*  Operation	            Time Complexity
+Insert an element	        O(1) (average)
+Delete an element	        O(1) (average)
+Access element by position  O(n)
+Find element by value	    O(1) (average)
+Traverse the set	        O(n)            
+
+max_size()
+
+Returns maximum number of elements that an unordered set can hold.
+size()
+
+*/
+}
+
+struct A {
+    int a;
+    int c;
+    int e;
+    int d;
+    int f;
+    int m;
+};
+
+struct Q {
+    int b;
+    int l;
+    A a; // size: 12
+    // A *aptr;  // pointer to A
+    // std::unique_ptr<A> aptr;
+};
+/*
+struct A {
+    int a;
+    int c;
+};
+
+struct Q {
+    int b;
+    A a;                    // embedded struct
+    std::unique_ptr<A> aptr; // smart pointer
+};
+struct Q (24 bytes total):
+
+Offset 0–3   : int b
+Offset 4–11  : struct A (a)
+   - A.a = 4–7
+   - A.c = 8–11
+Offset 12–15 : padding (for alignment)
+Offset 16–23 : std::unique_ptr<A> aptr (8 bytes)*/
+
+struct alignas(64) Node {
+    int x;
+    int y;
+};
+void T3() {
+    Q obj;
+    cout << "Size: " << sizeof(obj) << "\n";
+
+    Node n;
+    cout << "Size: " << sizeof(n) << "\n";
+    // cout << "Size: " << sizeof(obj) << "\n";
+}
+
 
 int main() {
     // This();
@@ -807,12 +1035,16 @@ int main() {
     // Test_StopCopy();
 
     // Virtual();
-    IOTA2();
-    WeakPtr();
-    SET();
 
-    T_Static();
+    // IOTA2();
+    // WeakPtr();
+    // SET();
 
-    VecPointer();
+    // T_Static();
+
+    // VecPointer();
+
+    T_ReverseNum();
+    T3();
     return 0;
 }

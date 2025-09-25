@@ -290,6 +290,7 @@ int* raw = mp;   // implicit conversion works
 
 class Chat {
 // #include "promise_type.h"
+public:
 struct promise_type {
     std::string _msgOut{}, _msgIn{};
 
@@ -304,35 +305,36 @@ struct promise_type {
     auto await_transform(std::string) noexcept {
         struct awaiter {
             promise_type &pt;
-            constexpr bool await_reddy() const noexcept { return true; }
+            constexpr bool await_ready() const noexcept { return true; }
             void await_suspend(std::coroutine_handle<>) const noexcept {}
+            std::string await_resume() const noexcept { return pt._msgIn; }
         };
-
         return awaiter{*this};
     }
+
 
     void return_value(std::string msg) noexcept { _msgOut = std::move(msg); }
     std::suspend_always final_suspend() noexcept { return {}; }
 };
 
     using Handle = std::coroutine_handle<promise_type>;
-    Handle mCoroHdl{};
+    Handle handle{};
 
-    explicit Chat(promise_type* p) : mCoroHdl{Handle::from_promise(*p)} {} // Get the handle form promis
-    Chat(Chat&& rhs) : mCoroHdl{std::exchange(rhs.mCoroHdl, nullptr)} {} // Move only
+    explicit Chat(promise_type* p) : handle{Handle::from_promise(*p)} {} // Get the handle form promis
+    Chat(Chat&& rhs) : handle{std::exchange(rhs.handle, nullptr)} {} // Move only
 
     ~Chat() {
-        if(mCoroHdl) { mCoroHdl.destroy(); }
+        if(handle) { handle.destroy(); }
     }
 
-    std::string loisten() { // Active the coroutine and wait for data
-        if(not mCoroHdl.done()) { mCoroHdl.resume(); }
-        return std::move(mCoroHdl.promise()._msgOut);
+    std::string listen() { // Active the coroutine and wait for data
+        if(not handle.done()) { handle.resume(); }
+        return std::move(handle.promise()._msgOut);
     }
 
     void answer(std::string msg) {
-        mCoroHdl.promise()._msgIn = msg;
-        if(not mCoroHdl.done()) { mCoroHdl.resume();}
+        handle.promise()._msgIn = msg;
+        if(not handle.done()) { handle.resume();}
     }
 }; 
 Chat Fun() {
@@ -344,19 +346,140 @@ Chat Fun() {
 }
 void Use() {
     Chat marco = Fun();
-    std::cout << macro.listen(); // Trigger the machine
-    macro.answer("W r u?\n"s);
-    std::cout << macro.listen();
+    std::cout << marco.listen(); // Trigger the machine
+    marco.answer("W r u?\n"s);
+    std::cout << marco.listen();
+/*Fun() is a coroutine.
+
+co_yield "Hello\n" → suspends and returns "Hello\n" to listen().
+
+Next time, coroutine hits std::cout << co_await std::string{} and pauses, waiting for input.
+
+answer("W r u?\n") → stores "W r u?\n" in the promise, then resume() continues coroutine.
+
+That co_await std::string{} pulls the stored _msgIn and sends it to std::cout.
+
+Finally, co_return "Here\n" → returns "Here\n" to listen().*/
 }
+/*  get_return_object() passes a raw promise_type* (this) into the Chat constructor.
+
+The Chat constructor is responsible for calling
+std::coroutine_handle<promise_type>::from_promise(*p)
+to create the coroutine handle.
+
+So the responsibility of building the coroutine handle is pushed into the return object’s constructor.
+
+Chat style:
+
+promise_type only gives this to the return object.
+
+Chat decides how to turn the promise_type* into a handle.
+
+More flexible (return object could decide to wrap the promise differently).
+
+ReturnObject2 style:
+
+promise_type directly constructs the handle.
+
+ReturnObject2 just stores what it’s given.
+
+Simpler (less work for the return type).
+
+========>>>>>>>>> If your return type needs more control (like Chat, which has destructor logic, move-only semantics, custom APIs like listen()/answer()), then giving it the raw promise pointer gives it maximum flexibility.*/
 
 /*Task: A coroutine that does a job without returning a value.
 Generator: A coroutine that does a job and returns a value (either by co_return or co_yield).
 
 
 */
+ /*
+struct suspend_always {
+    constexpr bool await_ready() const noexcept {
+        return false;
+    }
+
+    constexpr void
+    await_suspend(std::coroutine_handle <>) const noexcept {}
+
+    constexpr void await_resume() const noexcept {}
+};
+
+struct suspend_never {
+    constexpr bool await_ready() const noexcept {
+        return true;
+    }
+
+    constexpr void
+    await_suspend(std::coroutine_handle <>) const noexcept {}
+
+    constexpr void await_resume() const noexcept {}
+};
+*/
+
+
+struct Generator {
+    struct promise_type {
+        int _val{};
+
+        Generator           get_return_object() { return Generator{*this}; }
+        std::suspend_never  initial_suspend() noexcept { return {}; }
+        std::suspend_always final_suspend() noexcept { return {}; }
+        std::suspend_always yield_value(int v) {
+            _val = v;
+            return {};
+        }
+
+        void return_void() noexcept {}
+        void unhandled_dexeption() noexcept {}
+    };
+    
+    using Handle = std::coroutine_handle<promise_type>;
+    Handle handle;
+
+    explicit Generator(promise_type *p) : handle{ Handle::from_promise(*p)} {}
+
+    // Move only automatically desable copy ???
+    Generator(Generator&& rhs) : handle{ std::exchange(rhs.handle, nullptr)} {}
+
+    ~Generator () {
+        if(handle) { handle.destroy(); }
+    }
+
+    int value() const { return handle. promise()._val; }
+
+    bool finished() const { return handle.done(); }
+
+    void resume() {
+        if (not finished()) { handle.resume(); }
+    }
+}
+
+Generator interleaved(std::vector<int> a, std::vector<int> b) {
+    auto lamb = [](std::vector<int> &v) -> Generator {
+        for (const auto&& e : v) { co_yield e; }
+    };
+
+    auto x = lamb(a);
+    auto y = lamb(b);
+
+    while ( !x.finished() | !y,finished()) {
+        if (!x.finished()) {
+            co_yield x.value();
+            x.resume();
+        }
+
+        if (!y.finished()) {
+            co_yield y.value();
+            y.resume();
+        }
+    }
+}
 
 int main() {
     T2();
 // main function Cannot be a coroutine
     T3();
+
+    std::cout << "\n";
+    Use();
 }

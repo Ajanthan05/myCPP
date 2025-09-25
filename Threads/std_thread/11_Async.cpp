@@ -14,15 +14,15 @@ It returns a std::future to get the result later.
 .get()	Blocks (waits) until the task is done, then returns the result.
 .valid()	Checks if the future still holds a value.
 
-📌 Important Notes
+    Important Notes
 std::async may or may not spawn a new thread — unless you force std::launch::async.
 
 Future must be .get() or .wait() eventually — otherwise destructor may block.
 
 std::future is move-only (cannot copy it).
 
-Once you .get(), the future becomes invalid.
-*/
+Once you .get(), the future becomes invalid. */
+
 int slow_add(int a, int b) {
     std::this_thread::sleep_for(std::chrono::seconds(2));
     return a + b;
@@ -48,7 +48,7 @@ There are 3 options:
 1)  std::launch::async	Force to run in new thread immediately.
 2)  std::launch::deferred	Delay execution — only runs when .get() or .wait() is called.
 3)  Default (unspecified)	Compiler chooses async or deferred based on optimization.
-👉 If you want real parallelism, always specify std::launch::async.*/
+==>>> If you want real parallelism, always specify std::launch::async.*/
 
 void PassingLambda() {
     std::future<int> result = std::async(std::launch::async, [] () {
@@ -75,14 +75,14 @@ So you must explicitly declare the return type (-> int) to tell the compiler:*/
     
 }
 
-/*  🎯 When to use deferred (lazy async)?
+/*  When to use deferred (lazy async)?
 You want optional expensive computation (maybe you won't need the result).
 
 You want more control: start later manually.
 
 You want serial execution with a future interface (sometimes good for testing).
 
-🚨 Important catch
+    Important catch
 If you use deferred, and never call .get() or .wait(),
 then the function never runs!
 

@@ -213,6 +213,32 @@ private:
     std::size_t mCapacity_ = 0;
 };
 
+/*  1. The non-const version
+T& operator[](size_t index);
+
+Returns a modifiable reference to the element.
+This allows code like:
+Vector<int> v(10);
+v[3] = 42;       // ✅ modifies element at index 3
+int x = v[3];    // ✅ reads element at index 3
+
+Since the return type is T&, both reading and writing are possible.
+
+
+2. The const version
+const T& operator[](size_t index) const;
+
+
+Can only be called on a const object:
+
+const Vector<int> v(10);
+v[3] = 42;     // ❌ error, cannot modify
+int x = v[3];  // ✅ only read access
+
+
+Returns const T&, so even if you had a non-const object, this version guarantees the caller cannot modify the element.
+*/
+
 /*
 🔹 Case 1: new T[newCapacity]
 

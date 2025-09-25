@@ -1,5 +1,6 @@
 #include <iostream>
 #include <thread>
+#include <map>
 #include <mutex>
 #include <atomic>
 #include <vector>
@@ -10,7 +11,7 @@
 #include <condition_variable>
 using namespace std;
 #include <future>
-
+#include <shared_mutex>
 #include <memory>
 // #include <future>
 
@@ -76,7 +77,7 @@ public:
 
         T item = std::move(q.front());
         q.pop();
-        return item;
+        return item; // Ansel Sermershei
     }
 };
 
@@ -300,12 +301,12 @@ void V2() {
 
 
 
-std::unique_ptr<ComplicatedObject> createObject(int param1, double param2) {
-    auto obj = std::make_unique<ComplicatedObject>();
-    obj->doSomething(param1);      // if this throws, obj is destroyed
-    obj->somethingElse(param2);    // also safe
-    return obj;                    // moved out safely
-}
+// std::unique_ptr<ComplicatedObject> createObject(int param1, double param2) {
+//     auto obj = std::make_unique<ComplicatedObject>();
+//     obj->doSomething(param1);      // if this throws, obj is destroyed
+//     obj->somethingElse(param2);    // also safe
+//     return obj;                    // moved out safely
+// }
 /*  Benefits:
 If an exception is thrown, obj is automatically deleted.
 
@@ -323,12 +324,12 @@ auto obj = std::make_unique<ComplicatedObject>(arg1, arg2);*/
 // 💡 Alternative: Return by Value (if cheap or movable)
 // If ComplicatedObject is movable (has move constructor), return by value:
 
-ComplicatedObject createObject(int param1, double param2) {
-    ComplicatedObject obj;
-    obj.doSomething(param1);
-    obj.somethingElse(param2);
-    return obj;  // RVO (Return Value Optimization)
-}
+// ComplicatedObject createObject(int param1, double param2) {
+//     ComplicatedObject obj;
+//     obj.doSomething(param1);
+//     obj.somethingElse(param2);
+//     return obj;  // RVO (Return Value Optimization)
+// }
 
 
 
@@ -444,22 +445,7 @@ private:
     M m_mutex;
 };
 
-
-
-class {
-    void store(std::shared_ptr<T> desire);
-    shared_ptr<T> load();
-    bool compare_exchange_weak(auto& expected, shared_ptr<T>&& desired);
-    snapshot_ptr<T> get_snapshot();
-
-    // atomic<shared+ptr> + snapshot_ptr\
-    // get_snapshot() allows us to read without incrementing the reference count
-}
-
-struct Node : public hazard_pointer_obj_base<Node> {
-    T value;
-    atomic<Node*> next;
-};
+/*
 atomic<Node*> head;
 // Single (or synchronized) writer
 void remove(Node* prev, Node* target) {
@@ -478,6 +464,112 @@ void remove(Node* prev, Node* target) {
     prev->next.store(target->next.load());
 };
 // https://www.youtube.com/watch?v=OS7Asaa6zmY
+
+
+class MyCache {
+public:
+    void insert(std::string key, ComplicatedObject * element);
+    ComplicatedObject * lookup(std::string key);
+
+private:
+    std::map<std::string, ComplicatedObject *> m_cache;
+    std::shared_timed_mutex m_cacheMutex;
+};
+
+ComplicatedObject * MyCache::lookup(std::string key) {
+    std::shared_lock<std::shared_timed_mutex> lock(m_cacheMutex);
+    return m_cache[key];  // <-- problems here
+}
+///////////////
+class MyCache {
+public:
+    void insert(std::string key, std::shared_ptr<ComplicatedObject> element) {
+        std::unique_lock lock(m_cacheMutex);
+        m_cache[std::move(key)] = std::move(element);
+    }
+
+    std::shared_ptr<ComplicatedObject> lookup(const std::string& key) {
+        std::shared_lock lock(m_cacheMutex);
+        auto it = m_cache.find(key);
+        return (it != m_cache.end()) ? it->second : nullptr;
+    }
+
+private:
+    std::map<std::string, std::shared_ptr<ComplicatedObject>> m_cache;
+    std::shared_timed_mutex m_cacheMutex;
+};
+
+
+
+////////////////////////////////////////////////////////////////////////
+
+template <typename T, typename M = std::mutex>
+class guarded {
+public:
+    using handle = std::unique_ptr<T, deleter>;
+    template <typename... Us>
+    guarded(Us &&... data);
+    handle lock();
+    handle try_lock();
+    template <class Duration>
+    handle try_lock_for(const Duration & duration);
+    template <class TimePoint>
+    handle try_lock_until(const TimePoint & timepoint);
+
+private:
+    T m_obj;
+    M m_mutex;
+};
+
+template <typename T, typename M>
+template <typename... Us>
+guarded<T, M>::guarded(Us &&... data) : m_obj(std::forward<Us>(data)...) {}
+
+template <typename T, typename M>
+auto guarded<T, M>::lock() -> handle
+{
+    std::unique_lock<M> lock(m_mutex);
+    return handle(&m_obj, deleter(std::move(lock)));
+}
+
+template <typename T, typename M>
+auto guarded<T, M>::try_lock() -> handle {
+    std::unique_lock<M> lock(m_mutex, std::try_to_lock);
+    if (lock.owns_lock()) {
+        return handle(&m_obj, deleter(std::move(lock)));
+    } else {
+        return handle(nullptr, deleter(std::move(lock)));
+    }
+}
+
+class deleter {
+public:
+    using pointer = T *;
+    deleter(std::unique_lock<M> lock) : m_lock(std::move(lock)) {}
+    void operator()(T * ptr) {
+        if (m_lock.owns_lock()) {
+            m_lock.unlock();
+        }
+    }
+private:
+    std::unique_lock<M> m_lock;
+};
+*/
+
+// class {
+//     void store(std::shared_ptr<T> desire);
+//     shared_ptr<T> load();
+//     bool compare_exchange_weak(auto& expected, shared_ptr<T>&& desired);
+//     snapshot_ptr<T> get_snapshot();
+
+//     // atomic<shared+ptr> + snapshot_ptr\
+//     // get_snapshot() allows us to read without incrementing the reference count
+// }
+
+struct Node : public hazard_pointer_obj_base<Node> {
+    T value;
+    atomic<Node*> next;
+};
 
 int main() {
     // T();
