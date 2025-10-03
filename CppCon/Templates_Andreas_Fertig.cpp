@@ -798,11 +798,22 @@ void Test_TemplateTemplate() {
     Fun(l);
 }
 
+// Method 1
 template <typename A, typename B>
 std::ostream& operator<<(std::ostream& os, const std::pair<A,B>& p) {
     return os << "(" << p.first << ", " << p.second << ")";
 }
 
+// Method 2
+struct Printer {
+    template <typename T>
+    static void print(const T& x) { std::cout << x; }
+
+    template <typename A, typename B>
+    static void print(const std::pair<A,B>& p) {
+        std::cout << "(" << p.first << "," << p.second << ")";
+    }
+};
 template <
     template<class...> class Container2,  // accepts any number of type template params
     class... Args
@@ -810,6 +821,17 @@ template <
 void Fun2(const Container2<Args...>& c) {
     for (const auto& e : c) {
         cout << e << " ";
+// ethod 2
+// This way you don’t globally overload operator<< for pairs.
+        // if constexpr (requires { e.first; e.second; }) {
+        //     cout << "(" << e.first << "," << e.second << ") ";
+        // } else {
+        //     cout << e << " ";
+        // }
+
+// Method 3
+        // Printer::print(e);
+        // std::cout << " ";
     }
     cout << "\n";
 }
@@ -850,3 +872,5 @@ int main() {
 
     Test_TemplateTemplate2();
 }
+
+// Reference : https://chatgpt.com/c/6814ca57-2ff8-8000-ba23-a80b7efbf11d

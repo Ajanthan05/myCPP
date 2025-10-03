@@ -42,8 +42,8 @@ using multiple CPU threads, without manually managing threads or locks.
 Execution Policies
 
 1. std::execution::seq
-Default (sequential execution).
-Same as old algorithms.
+    Default (sequential execution).
+    Same as old algorithms.
 
 2. std::execution::par
     Parallel execution (multiple threads).
@@ -57,7 +57,7 @@ Same as old algorithms.
 4. C++20 adds std::execution::unseq
     Sequential vectorized execution (no threading, but SIMD allowed).
 
-    xtd::for_each
+std::for_each
 std::transform
 
 std::sort, std::stable_sort
@@ -654,6 +654,15 @@ void PipeLining() {
         std::cout << x << " ";
     }
     cout << "\n";
+/*
+No intermediate vectors allocated.
+Each stage is lazy → computed only when iterated.
+
+    ===>>>  Why pipelining is powerful
+Composability: You can stack any adaptors (filter, transform, drop, take, reverse, etc.).
+Lazy evaluation: Values are computed on demand, not stored unless you ask.
+Efficiency: Avoids unnecessary copies/allocations.
+Expressiveness: Code reads like a data-processing pipeline.*/
 }
 
 int main() {

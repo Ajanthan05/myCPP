@@ -127,7 +127,9 @@
         "synchronized_value": "cpp",
         "__functional_03": "cpp",
         "__tree": "cpp",
-        "text_encoding": "cpp"
+        "text_encoding": "cpp",
+        "generator": "cpp",
+        "__locale": "cpp"
     },
     "C_Cpp.errorSquiggles": "disabled",
     "cmake.sourceDirectory": "/home/ajanthan/myCPP/IPC/1"

@@ -215,27 +215,22 @@ int main() {
     print(stdarr); // works too
 
     /*  Key Features
-    ✅ 1. Non-owning
-    span doesn’t allocate or free memory — it just refers to existing memory.
+    1. Non-owning
+        span doesn’t allocate or free memory — it just refers to existing memory.
 
-    ✅ 2. Safe bounds-checking (in debug)
-    Offers array-style access (operator[]) and range-based iteration.
+    2. Safe bounds-checking (in debug)
+        Offers array-style access (operator[]) and range-based iteration.
 
     In debug builds, may throw out-of-bounds exceptions.
 
-    ✅ 3. View into any contiguous memory:
-    Works with:
+    3. View into any contiguous memory:
+        Works with:
+            C-style arrays
+            std::array
+            std::vector
+            std::string_view (via span<const char> or span<char>)    */
 
-    C-style arrays
-
-    std::array
-
-    std::vector
-
-    std::string_view (via span<const char> or span<char>)
-    */
-
-    // Slicing support :- You can easily create sub-views (like Python slices)
+// Slicing support :- You can easily create sub-views (like Python slices)
     std::span<int> s1 = vec;
     auto mid1 = s1.subspan(1, 3); // 2 3 4 
     print(mid1);
@@ -245,18 +240,12 @@ int main() {
 
     /*   Static vs Dynamic Extent
 Static extent: Size known at compile time (e.g. std::span<int, 5>)
-Static extent: The size is known at compile time.
-→ std::span<int, 5>
 The static version tells the compiler, "This span will always be exactly 5 elements long." 
 That can enable:
-Slight performance gains (no runtime size tracking)
-Safer code (compiler checks size for you)
+    Slight performance gains (no runtime size tracking)
+    Safer code (compiler checks size for you)
 
-Dynamic extent: Size known at runtime (e.g. std::span<int>)
-Dynamic extent: The size is determined at runtime.
-→ std::span<int>
-
-*/
+Dynamic extent: Size known at runtime (e.g. std::span<int>)  */
 
 
     // Dynamic extent
@@ -278,13 +267,10 @@ std::span<int, 3> s_static(arr); // Size must match exactly!
 | `first(n)`, `last(n)`    | Subviews for first/last elements |
 */
 
-    /*  Limitations
+/*Limitations
     Must point to contiguous memory.
-
     Not usable with std::list, std::map, etc.
-
     Doesn't work with dynamically generated or disjoint memory layouts.
-
     No memory ownership = no lifetime guarantee! Don’t return spans to temporary data.
 */
 
@@ -298,10 +284,7 @@ In this case, the compiler knows the size of the array at compile time, so it ca
 int* ptr = arr;
 print(ptr); // ❌ Won't compile
 This won't work because int* doesn't carry size information — and std::span<int> needs both a pointer and a size.
-print(std::span<int>(ptr, size));
-
-
-*/
+print(std::span<int>(ptr, size));   */
 
 
     T_Span();
